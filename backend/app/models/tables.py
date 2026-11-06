@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DDL, event, JSON
+from sqlalchemy import DDL, JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, event
 
 from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.database import Base
-
+from sqlalchemy import DDL, JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, event
 
 def new_id() -> str:
     return uuid.uuid4().hex
@@ -113,7 +113,7 @@ class AuditEvent(Base):
 # Database-level append-only enforcement for the audit log (SQLite)
 for _name, _op in (("audit_no_update", "UPDATE"), ("audit_no_delete", "DELETE")):
     event.listen(
-        AuditEvent.__table__,
+        Base.metadata,
         "after_create",
         DDL(
             f"CREATE TRIGGER IF NOT EXISTS {_name} BEFORE {_op} ON audit_events "
