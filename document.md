@@ -226,7 +226,21 @@ Details are redacted before storage: keys containing `password`, `token`, `secre
 
 ## ⚙️ 1.9 Setup guide
 
-📦 Requirements: Python 3.12 or newer (developed on 3.14), and VS Code. Docker is not needed.
+📦 Requirements: Python 3.12 or newer (developed on 3.14), or Docker Desktop with Docker Compose.
+
+### Run with Docker
+
+From the project root, copy `.env.example` to `.env` and set `SECRET_KEY` to a random value of at least 32 characters (for example, generate one with `python -c "import secrets; print(secrets.token_urlsafe(48))"`). Then start the app:
+
+```
+docker compose up --build
+```
+
+Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/docs` for the API documentation. The SQLite database is stored in the `sidewatch-data` Docker volume. Stop the app with `Ctrl+C`; use `docker compose down` to remove its container while keeping the database volume.
+
+The Compose setup is for local development only. It binds the app to localhost and must not be used as a production deployment.
+
+### Run directly with Python
 
 ```
 python -m venv .venv
@@ -304,7 +318,7 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 
 ## 🚧 1.12 Limitations
 
-- ⚠️ **Placeholder engine.** Results come from a stub until Member B's engine is connected. Backend tests prove the pipeline, not the statistics.
+- ⚠️ **Local microbenchmark only.** Engine results measure fixed-width demonstration inputs in the local Python runtime. They do not prove constant-time behavior and can vary with CPU scheduling, runtime and hardware noise.
 - ⚠️ **In-memory rate limiter.** It resets on restart and works only for a single process. Behind a proxy, all clients may share one IP.
 - ⚠️ **SQLite and a single process.** Suitable for a local lab, not for production scale or concurrent writers.
 - ⚠️ **Synchronous runs.** A request waits until the measurement finishes, which is acceptable up to 5000 samples.
@@ -319,7 +333,35 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 
 # 🔬 Part 2: Security Engine and Evaluation Fixtures (Member B)
 
+## 2.1 Engine workflow
 
+The engine in `engine/` compares a selected, fixed-width demo candidate with the `no_match` control. The `vulnerable` implementation exits at the first differing byte; the `constant_time` implementation uses Python's `hmac.compare_digest`. These are local, instructor-safe examples only: no user password, network target, or production credential is used.
+
+Each run warms both inputs, then collects the configured number of paired batches. The order within each pair is randomized, each batch times 64 comparisons using `perf_counter_ns`, and SciPy performs a two-sided paired t-test. The engine reports the mean paired difference in nanoseconds, paired Cohen's dz, the configured confidence interval, p-value, and chart-ready common-bin histograms. A leak is reported only when the interval excludes zero, the p-value is below `alpha`, and the absolute effect size meets `min_effect_size`. A no-leak result requires a non-significant p-value, an interval containing zero, and an effect size no greater than the configured minimum; all other cases are inconclusive. The `confidence` field is `1 - p-value`, a measure of evidence against equal timing distributions, not a posterior probability.
+
+| Fixture | Meaning |
+|---|---|
+| `no_match` | Control; differs at the first byte |
+| `prefix_1` | Matches one leading byte |
+| `prefix_4` | Matches four leading bytes |
+| `full_match` | Matches all 32 bytes |
+| `prefix_1_jitter` | One-byte prefix with a 250 ns standard-deviation Gaussian measurement overlay |
+| `prefix_4_jitter` | Four-byte prefix with the same controlled jitter |
+
+Seeded runs reproduce the randomized measurement schedule and jitter sequence. Wall-clock timings can still vary across runs and machines; the seed does not make hardware measurements identical. Jitter fixtures explicitly model added measurement noise and report it in evidence. Histograms contain counts rather than raw timing traces.
+
+## 2.2 Evaluation coverage
+
+| Proposal case | Engine evidence |
+|---|---|
+| T1: Sample-size sensitivity | Configurable samples per group; sample count and interval are returned |
+| T2: Jitter | Paired jitter fixtures and explicit jitter metadata |
+| T3: Prefix guesses | No-match, one-byte, four-byte, and full-match fixtures |
+| T4: Constant-time comparison | Same fixtures can run against `hmac.compare_digest` |
+| T5: Confidence intervals | Paired t confidence interval in nanoseconds, at the configured `ci_level` |
+| T6: Reproducibility | Seeded schedule SHA-256 and deterministic jitter stream |
+
+This is a local microbenchmark, not a proof of constant-time behavior. CPU scheduling, runtime and hardware effects can dominate small timing differences; use larger sample sizes, compare both implementations, and treat inconclusive/no-leak decisions cautiously.
 
 ---
 
@@ -330,5 +372,3 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 ---
 
 # 🧪 Part 4: Automation, Security Testing, Packaging and QA (Member D)
-
-

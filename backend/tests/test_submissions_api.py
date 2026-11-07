@@ -36,8 +36,10 @@ def test_operator_runs_submission_and_gets_explainable_result(client, api_db):
     assert r.status_code == 201 and r.json()["status"] == "completed"
     res = client.get(f"/api/submissions/{r.json()['id']}/result")
     body = res.json()
-    assert res.status_code == 200 and body["decision"] == "leak_detected"
+    assert res.status_code == 200
+    assert body["decision"] in {"leak_detected", "no_leak_detected", "inconclusive"}
     assert body["reasons"] and body["rule_name"] and body["thresholds"]["alpha"] == 0.01
+    assert body["evidence"]["method"] == "paired_wall_clock_microbenchmark"
     assert audit_repo.list_events(api_db, action="submission.run", outcome="success")
 
 

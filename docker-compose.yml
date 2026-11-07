@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: .
+    environment:
+      APP_ENV: development
+      DATABASE_URL: sqlite:////app/data/sidewatch.db
+      SESSION_TTL_MINUTES: ${SESSION_TTL_MINUTES:-30}
+      SECRET_KEY: ${SECRET_KEY:?Set SECRET_KEY in .env (see .env.example)}
+      MAX_BODY_BYTES: ${MAX_BODY_BYTES:-65536}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - sidewatch-data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  sidewatch-data:

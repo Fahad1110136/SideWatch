@@ -45,7 +45,12 @@ def test_operator_exports_sanitized_report(client, api_db):
     r = client.get(f"/api/submissions/{sub_id}/report")
     assert r.status_code == 200 and "attachment" in r.headers["content-disposition"]
     body = r.json()
-    assert body["result"]["decision"] == "leak_detected" and body["result"]["reasons"]
+    assert body["result"]["decision"] in {
+        "leak_detected",
+        "no_leak_detected",
+        "inconclusive",
+    }
+    assert body["result"]["reasons"]
     assert body["evidence_links"]["result_id"]
     actions = [e["action"] for e in body["evidence_links"]["audit_events"]]
     assert actions == ["submission.create", "submission.run"]
