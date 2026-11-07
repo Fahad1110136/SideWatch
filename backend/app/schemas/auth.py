@@ -30,3 +30,11 @@ class UserOut(BaseModel):
     username: str
     role: Role
     is_active: bool
+
+class LoginResponse(BaseModel):
+    user: UserOut
+    csrf_token: str
+
+
+class ActiveUpdate(StrictModel):
+    is_active: bool

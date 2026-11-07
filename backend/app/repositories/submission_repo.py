@@ -21,13 +21,25 @@ def get(db: Session, submission_id: str) -> Submission | None:
     return db.get(Submission, submission_id)
 
 
+# def list_submissions(db: Session, *, user_id: str | None = None, status: str | None = None,
+#                      limit: int = 50, offset: int = 0) -> list[Submission]:
+#     q = select(Submission).order_by(Submission.created_at.desc())
+#     if user_id:
+#         q = q.where(Submission.user_id == user_id)
+#     if status:
+#         q = q.where(Submission.status == status)
+#     return list(db.scalars(q.limit(min(limit, 200)).offset(max(offset, 0))))
+
 def list_submissions(db: Session, *, user_id: str | None = None, status: str | None = None,
+                     implementation: str | None = None,
                      limit: int = 50, offset: int = 0) -> list[Submission]:
     q = select(Submission).order_by(Submission.created_at.desc())
     if user_id:
         q = q.where(Submission.user_id == user_id)
     if status:
         q = q.where(Submission.status == status)
+    if implementation:
+        q = q.where(Submission.implementation == implementation)
     return list(db.scalars(q.limit(min(limit, 200)).offset(max(offset, 0))))
 
 

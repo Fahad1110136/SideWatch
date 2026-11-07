@@ -45,6 +45,20 @@ def rate_limited():
 def _body(code: str, message: str) -> dict:
     return {"code": code, "message": message, "request_id": uuid.uuid4().hex[:12]}
 
+def user_exists():
+    return AppError("USER_EXISTS", "That username is not available.", 409)
+
+def invalid_operation():
+    return AppError("INVALID_OPERATION", "This operation is not allowed.", 400)
+
+def invalid_fixture():
+    return AppError("INVALID_FIXTURE", "Unknown test fixture.", 422)
+
+def invalid_rule_value():
+    return AppError("INVALID_RULE_VALUE", "Value is outside the permitted range.", 422)
+
+def confirmation_required():
+    return AppError("CONFIRMATION_REQUIRED", "This action must be confirmed.", 400)
 
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)

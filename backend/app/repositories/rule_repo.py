@@ -32,3 +32,6 @@ def update_value(db: Session, key: str, value: float, user_id: str) -> RuleConfi
     rule.updated_at = utcnow()
     db.commit()
     return rule
+
+def list_rules(db: Session) -> list[RuleConfig]:
+    return list(db.scalars(select(RuleConfig).order_by(RuleConfig.key)))
