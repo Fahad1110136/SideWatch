@@ -164,7 +164,7 @@ def _statistics(
         p_value,
         ci_low,
         ci_high,
-        1 - p_value,
+        confidence_level,
         decision,
         severity,
     )
@@ -289,7 +289,8 @@ def run_analysis(req: EngineRequest) -> dict:
             "seed": req.seed,
             "schedule_sha256": schedule_hash,
             "confidence_interpretation": (
-                "1 - two-sided paired-test p-value; not a posterior probability"
+                "configured two-sided paired t confidence-interval level; "
+                "not a posterior probability"
             ),
             "histogram": _histogram(baseline_samples, fixture_samples),
             "baseline_summary_ns": {

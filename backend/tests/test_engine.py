@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from backend.app.schemas.result import EngineResult
+from engine.evaluation import run_evaluation
 from engine.fixtures import FIXTURES, list_fixtures
 from engine.interface import EngineRequest, _statistics, run_analysis
 
@@ -42,6 +43,8 @@ def test_analysis_returns_schema_valid_chart_ready_measurements():
     assert sum(evidence["histogram"]["baseline_counts"]) == 60
     assert sum(evidence["histogram"]["fixture_counts"]) == 60
     assert evidence["jitter"]["injected"] is False
+    assert result["confidence"] == THRESHOLDS["ci_level"]
+    assert "confidence-interval level" in evidence["confidence_interpretation"]
 
 
 def test_seed_reproduces_measurement_schedule_and_jitter():
@@ -97,3 +100,23 @@ def test_statistical_decision_uses_significance_effect_and_interval():
     assert mixed_stats[2] < mixed_thresholds["alpha"]
     assert mixed_stats[3] <= 0 <= mixed_stats[4]
     assert mixed_stats[6] == "inconclusive"
+
+
+def test_member_b_evaluation_reports_all_proposal_cases():
+    report = run_evaluation()
+
+    assert report["total"] == 6
+    assert report["passed"] == 6
+    assert [case["id"] for case in report["cases"]] == [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+    ]
+    assert all(
+        {"inputs", "expected", "actual", "evidence", "passed"} <= case.keys()
+        and case["passed"]
+        for case in report["cases"]
+    )

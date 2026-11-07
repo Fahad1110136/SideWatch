@@ -337,7 +337,7 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 
 The engine in `engine/` compares a selected, fixed-width demo candidate with the `no_match` control. The `vulnerable` implementation exits at the first differing byte; the `constant_time` implementation uses Python's `hmac.compare_digest`. These are local, instructor-safe examples only: no user password, network target, or production credential is used.
 
-Each run warms both inputs, then collects the configured number of paired batches. The order within each pair is randomized, each batch times 64 comparisons using `perf_counter_ns`, and SciPy performs a two-sided paired t-test. The engine reports the mean paired difference in nanoseconds, paired Cohen's dz, the configured confidence interval, p-value, and chart-ready common-bin histograms. A leak is reported only when the interval excludes zero, the p-value is below `alpha`, and the absolute effect size meets `min_effect_size`. A no-leak result requires a non-significant p-value, an interval containing zero, and an effect size no greater than the configured minimum; all other cases are inconclusive. The `confidence` field is `1 - p-value`, a measure of evidence against equal timing distributions, not a posterior probability.
+Each run warms both inputs, then collects the configured number of paired batches. The order within each pair is randomized, each batch times 64 comparisons using `perf_counter_ns`, and SciPy performs a two-sided paired t-test. The engine reports the mean paired difference in nanoseconds, paired Cohen's dz, the configured confidence interval, p-value, and chart-ready common-bin histograms. A leak is reported only when the interval excludes zero, the p-value is below `alpha`, and the absolute effect size meets `min_effect_size`. A no-leak result requires a non-significant p-value, an interval containing zero, and an effect size no greater than the configured minimum; all other cases are inconclusive. The `confidence` field is the configured confidence-interval level, not a posterior probability.
 
 | Fixture | Meaning |
 |---|---|
@@ -349,6 +349,8 @@ Each run warms both inputs, then collects the configured number of paired batche
 | `prefix_4_jitter` | Four-byte prefix with the same controlled jitter |
 
 Seeded runs reproduce the randomized measurement schedule and jitter sequence. Wall-clock timings can still vary across runs and machines; the seed does not make hardware measurements identical. Jitter fixtures explicitly model added measurement noise and report it in evidence. Histograms contain counts rather than raw timing traces.
+
+Run the Member B T1–T6 demonstration from the project root with `python -m engine.evaluation`. It prints a JSON report containing each case's inputs, expected behavior, actual output, evidence, and pass/fail status. These checks verify engine behavior and fixture wiring; timing values and statistical decisions are observations, not fixed expected answers.
 
 ## 2.2 Evaluation coverage
 
