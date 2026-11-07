@@ -60,6 +60,12 @@ def invalid_rule_value():
 def confirmation_required():
     return AppError("CONFIRMATION_REQUIRED", "This action must be confirmed.", 400)
 
+def current_password_invalid():
+    return AppError("CURRENT_PASSWORD_INVALID", "Current password is incorrect.", 400)
+
+def password_reuse():
+    return AppError("PASSWORD_REUSE", "The new password must be different from the current one.", 422)
+
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def handle_app_error(request: Request, exc: AppError):

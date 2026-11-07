@@ -70,3 +70,11 @@ def register_successful_login(db: Session, user: User) -> None:
     user.failed_logins = 0
     user.locked_until = None
     db.commit()
+
+
+def set_password(db: Session, user: User, new_password: str) -> User:
+    user.password_hash = hash_password(new_password)
+    user.failed_logins = 0
+    user.locked_until = None          # a reset also unlocks the account
+    db.commit()
+    return user

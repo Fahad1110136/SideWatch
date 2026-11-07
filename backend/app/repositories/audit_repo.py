@@ -92,3 +92,13 @@ def list_events(db: Session, *, action: str | None = None, outcome: str | None =
     if actor_id:
         q = q.where(AuditEvent.actor_id == actor_id)
     return list(db.scalars(q.limit(min(limit, 500)).offset(max(offset, 0))))
+
+
+def list_for_resource(db: Session, resource_type: str, resource_id: str,
+                      actions: tuple[str, ...]) -> list[AuditEvent]:
+    q = (select(AuditEvent)
+         .where(AuditEvent.resource_type == resource_type,
+                AuditEvent.resource_id == resource_id,
+                AuditEvent.action.in_(actions))
+         .order_by(AuditEvent.id))
+    return list(db.scalars(q))

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from backend.app.config import settings
@@ -50,3 +50,18 @@ def csrf_is_valid(session: UserSession, csrf_token: str | None) -> bool:
     if not csrf_token:
         return False
     return constant_time_equal(session.csrf_hash, hash_token(csrf_token))
+
+
+def purge_expired(db: Session) -> int:
+    """Delete expired sessions. Returns how many were removed."""
+    result = db.execute(delete(UserSession).where(UserSession.expires_at <= utcnow()))
+    db.commit()
+    return result.rowcount or 0
+
+
+def rotate_csrf(db: Session, session: UserSession) -> str:
+    """Issue a fresh CSRF token for a valid session. Only the hash is stored."""
+    csrf = generate_token()
+    session.csrf_hash = hash_token(csrf)
+    db.commit()
+    return csrf
