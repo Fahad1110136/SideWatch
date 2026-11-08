@@ -132,59 +132,8 @@ Base path `/api`. Interactive documentation is at `/api/docs`. "CSRF" means the 
 | GET `/rules` | admin, operator | no | | Current thresholds |
 | PUT `/rules/{key}` | admin | 🔑 yes | | Change a threshold, `confirm: true` required |
 
-### 🚨 Stable error codes
 
-Every error has the shape `{"code", "message", "request_id"}`. Messages are generic. Stack traces go only to the server log.
-
-| Code | HTTP | Meaning |
-|---|---|---|
-| `AUTH_INVALID_CREDENTIALS` | 401 | Wrong username or password (identical for unknown users and deactivated accounts) |
-| `AUTH_ACCOUNT_LOCKED` | 423 | Too many failed logins; 15-minute lock after 5 failures |
-| `AUTH_REQUIRED` | 401 | No session |
-| `AUTH_SESSION_EXPIRED` | 401 | Session expired or revoked |
-| `CSRF_FAILED` | 403 | Missing or wrong CSRF token |
-| `ACCESS_DENIED` | 403 | Role not permitted |
-| `NOT_FOUND` | 404 | Missing, or not visible to this user |
-| `VALIDATION_ERROR` | 422 | Invalid body; never echoes the input |
-| `INVALID_FIXTURE` | 422 | Fixture not on the whitelist |
-| `INVALID_RULE_VALUE` | 422 | Threshold outside its permitted range |
-| `PASSWORD_REUSE` | 422 | New password equals the current one |
-| `CURRENT_PASSWORD_INVALID` | 400 | Wrong current password |
-| `CONFIRMATION_REQUIRED` | 400 | High-impact action without `confirm: true` |
-| `INVALID_OPERATION` | 400 | For example, an admin acting on their own account |
-| `USER_EXISTS` | 409 | Username unavailable |
-| `RATE_LIMITED` | 429 | Too many requests |
-| `REQUEST_TOO_LARGE` | 413 | Body above the limit |
-| `LENGTH_REQUIRED` | 411 | Chunked body with no declared length |
-| `INTERNAL_ERROR` | 500 | Unexpected failure |
-
-Submission `error_code` values: `ENGINE_FAILED` (engine crashed or returned invalid output), `INTERRUPTED_BY_RESTART` (run was in progress when the server stopped).
-
-## 📝 1.6 Audit event catalog
-
-| Action | Logged when |
-|---|---|
-| `auth.login` | Every attempt: success, failure, or locked |
-| `auth.logout` | Sign out |
-| `auth.password_change` | Success and failure |
-| `admin.seed` | First administrator created |
-| `admin.user_create` | Success and failure |
-| `admin.user_active_change` | Success and denied (self-change) |
-| `admin.password_reset` | Success and denied |
-| `admin.rule_change` | Success (old value, new value, version) and failure |
-| `submission.create` | Success and unknown fixture |
-| `submission.run` | Result stored, or engine failure |
-| `report.export` | Every export, with the report digest |
-| `security.access_denied` | Role or ownership denial |
-| `security.csrf_failed` | CSRF check failed |
-| `security.rate_limited` | Rate limit hit |
-| `system.startup` | Every start: chain status, recovered runs, purged sessions |
-| `system.recovery` | A run marked failed after a restart |
-
-Details are redacted before storage: keys containing `password`, `token`, `secret`, `csrf`, `hash`, `authorization`, `cookie` or `api_key` become `[REDACTED]`, and strings are cut at 200 characters.
-
-
-## ⚠️ 1.7 Threat model (backend portion)
+## ⚠️ 1.6 Threat model (backend portion)
 
 | # | Threat | Where | Mitigation | Evidence (test file) |
 |---|---|---|---|---|
@@ -204,7 +153,7 @@ Details are redacted before storage: keys containing `password`, `token`, `secre
 | T14 | Tampering with an exported report | Report | SHA-256 digest inside the report and in the audit log | `test_report_api.py` |
 | T15 | Clickjacking and content sniffing | Responses | `X-Frame-Options`, CSP `frame-ancestors`, `nosniff` | `test_middleware.py`, `test_frontend.py` |
 
-## 🤝 1.8 Interface contracts for teammates
+## 🤝 1.7 Interface contracts for teammates
 
 ### 🔬 For Member B (engine)
 
@@ -224,7 +173,7 @@ Details are redacted before storage: keys containing `password`, `token`, `secre
 - Handle the error codes in section 1.7. A 401 means show the login screen.
 - For high-impact actions (rule changes, password resets) show a confirmation dialog and send `confirm: true`.
 
-## ⚙️ 1.9 Setup guide
+## ⚙️ 1.8 Setup guide
 
 📦 Requirements: Python 3.12 or newer (developed on 3.14), or Docker Desktop with Docker Compose.
 
@@ -274,7 +223,7 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 
 🚨 Important: never change `SECRET_KEY` on a database that already has data. All sessions stop working and the audit chain fails verification. In development, delete `data/sidewatch.db` and seed again.
 
-## 🧑‍💼 1.10 Administrator guide
+## 🧑‍💼 1.9 Administrator guide
 
 | Task | How |
 |---|---|
@@ -287,7 +236,7 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 | Verify audit integrity | `GET /api/audit/verify` should return `"intact": true` |
 | Export a report | `GET /api/submissions/{id}/report` |
 
-## ✅ 1.11 Test evidence (Member A portion)
+## ✅ 1.10 Test evidence (Member A portion)
 
 ✅ 127 automated tests, all passing.
 
@@ -315,29 +264,76 @@ Open `http://127.0.0.1:8000/` for the interface and `http://127.0.0.1:8000/api/d
 | `test_startup.py` | 6 | Production key guard, session purge |
 | `test_frontend.py` | 4 | Frontend served, page CSP, project files not exposed |
 
-
-## 🚧 1.12 Limitations
-
-- ⚠️ **Local microbenchmark only.** Engine results measure fixed-width demonstration inputs in the local Python runtime. They do not prove constant-time behavior and can vary with CPU scheduling, runtime and hardware noise.
-- ⚠️ **In-memory rate limiter.** It resets on restart and works only for a single process. Behind a proxy, all clients may share one IP.
-- ⚠️ **SQLite and a single process.** Suitable for a local lab, not for production scale or concurrent writers.
-- ⚠️ **Synchronous runs.** A request waits until the measurement finishes, which is acceptable up to 5000 samples.
-- ⚠️ **One measurement at a time.** This protects timing accuracy but queues concurrent users.
-- ⚠️ **Audit chain detects, it does not prevent.** Someone with both the database file and `SECRET_KEY` could rebuild a valid chain. The key must stay secret.
-- ⚠️ **Lockout can be abused.** An attacker who knows a username can lock that account for 15 minutes. This trades availability for brute-force protection.
-- ⚠️ **Failed-login logs record the attempted username.** A user who mistypes a password into the username box would expose it in the log. Logs must be treated as sensitive.
-- ⚠️ **CSRF refresh invalidates the previous token.** Two tabs in the same session can interfere with each other.
-- ⚠️ **No HTTPS in development.** The Secure cookie flag and HSTS are enabled only when `APP_ENV=production` behind HTTPS.
-- ⚠️ **No self-service password recovery.** Resets are done by an administrator.
 ---
 
 # 🔬 Part 2: Security Engine and Evaluation Fixtures (Member B)
 
-## 2.1 Engine workflow
+## 🎯 2.1 Scope
 
-The engine in `engine/` compares a selected, fixed-width demo candidate with the `no_match` control. The `vulnerable` implementation exits at the first differing byte; the `constant_time` implementation uses Python's `hmac.compare_digest`. These are local, instructor-safe examples only: no user password, network target, or production credential is used.
+Member B owns the security engine, the part of SideWatch that actually measures timing leakage:
 
-Each run warms both inputs, then collects the configured number of paired batches. The order within each pair is randomized, each batch times 64 comparisons using `perf_counter_ns`, and SciPy performs a two-sided paired t-test. The engine reports the mean paired difference in nanoseconds, paired Cohen's dz, the configured confidence interval, p-value, and chart-ready common-bin histograms. A leak is reported only when the interval excludes zero, the p-value is below `alpha`, and the absolute effect size meets `min_effect_size`. A no-leak result requires a non-significant p-value, an interval containing zero, and an effect size no greater than the configured minimum; all other cases are inconclusive. The `confidence` field is the configured confidence-interval level, not a posterior probability.
+- A deliberately **vulnerable** early-exit comparison and a **constant-time** comparison
+- A repeated-measurement harness with warm-up, randomized pair order, and optional controlled jitter
+- Statistical comparison with SciPy: paired t-test, effect size, and a confidence interval
+- A rule-based decision (leak, no leak, or inconclusive) with a severity and an explanation
+- Mitigation recommendations attached to every decision
+- Safe, fixed-width fixtures and the evaluation harness for the proposal's cases T1 to T6
+
+The engine is plain Python with no web dependency. It is reached only through the contract in `engine/interface.py`.
+
+| File | Purpose |
+|---|---|
+| `engine/interface.py` | Contract with the backend: `EngineRequest`, `list_fixtures()`, `run_analysis()`, input validation, measurement, statistics and decision rules |
+| `engine/fixtures.py` | Whitelisted fixtures and the fixed public reference value |
+| `engine/evaluation.py` | T1 to T6 demonstration that prints a JSON evidence report |
+| `backend/tests/test_engine.py` | 13 automated engine tests |
+
+## 🔬 2.2 Engine workflow
+
+The engine compares a selected, fixed-width demo candidate with the `no_match` control. The `vulnerable` implementation exits at the first differing byte. The `constant_time` implementation uses Python's `hmac.compare_digest`. These are local, instructor-safe examples only: no user password, network target, or production credential is used.
+
+1. **Validate.** The request is checked before anything runs (see section 2.5).
+2. **Warm up.** Both the control and the fixture are compared `warmup_runs` times, untimed, so caches and the interpreter settle.
+3. **Schedule.** A seeded random generator decides, for each pair, whether the fixture or the control is timed first. The schedule is hashed (SHA-256) so a run can be reproduced and checked.
+4. **Measure.** For each of the `sample_size` pairs, each side is timed over a batch of 64 comparisons with `perf_counter_ns`, and the per-call mean in nanoseconds is stored. For jitter fixtures, a seeded Gaussian overlay is added to each sample (values below zero are clamped and counted).
+5. **Compare.** SciPy runs a two-sided paired t-test on the fixture-minus-control differences. The engine computes the mean difference, paired Cohen's dz, and a t-based confidence interval at the configured `ci_level`.
+6. **Decide.** The decision rules in section 2.3 produce a decision, a severity and a list of reasons.
+7. **Return.** A dictionary that validates against `EngineResult` is returned. The backend stores it with the threshold snapshot and the rule and engine versions.
+
+The `confidence` field is the configured confidence-interval level, not a posterior probability. The result says so in `evidence.confidence_interpretation`.
+
+## ⚖️ 2.3 Decision rules
+
+Rule name `paired_timing_leakage`, rule version `1`, engine version `1.0.0`. Thresholds come from the database (Part 1, rule configuration) and are copied into every result.
+
+| Threshold | Default | Permitted range | Meaning |
+|---|---|---|---|
+| `alpha` | 0.01 | 0.0001 to 0.1 | Significance level for the paired t-test |
+| `min_effect_size` | 0.2 | 0 to 5 | Smallest absolute Cohen's dz treated as meaningful |
+| `ci_level` | 0.99 | 0.8 to 0.999 | Confidence level of the interval on the mean difference |
+
+These are the same defaults and bounds as the backend's `rule_repo`, so the two sides agree.
+
+| Decision | Condition |
+|---|---|
+| `leak_detected` | p-value below `alpha`, **and** the interval excludes zero, **and** the absolute effect size is at least `min_effect_size` |
+| `no_leak_detected` | p-value at or above `alpha`, **and** the interval contains zero, **and** the absolute effect size is at most `min_effect_size` |
+| `inconclusive` | Everything else, for example significant but a tiny effect, or noisy data |
+
+| Severity | When |
+|---|---|
+| `high` | Leak with absolute effect size of 0.8 or more |
+| `medium` | Leak with absolute effect size of 0.5 to under 0.8 |
+| `low` | Leak with a smaller effect size, or any inconclusive result |
+| `info` | No leak detected |
+
+Severity measures how large the timing difference is relative to its noise. It is not a measure of how exploitable the leak is in a real system.
+
+Edge case: if every paired difference is identical (zero spread), the engine reports effect size 0 and p = 1 when the difference is zero, or a capped effect size of ±1000 and p = 0 otherwise, instead of dividing by zero.
+
+## 🧪 2.4 Fixtures
+
+All fixtures are 32 bytes long and compare against one fixed, public reference value (`bytes(range(32))`). It is a demo value, not a secret.
 
 | Fixture | Meaning |
 |---|---|
@@ -348,22 +344,103 @@ Each run warms both inputs, then collects the configured number of paired batche
 | `prefix_1_jitter` | One-byte prefix with a 250 ns standard-deviation Gaussian measurement overlay |
 | `prefix_4_jitter` | Four-byte prefix with the same controlled jitter |
 
-Seeded runs reproduce the randomized measurement schedule and jitter sequence. Wall-clock timings can still vary across runs and machines; the seed does not make hardware measurements identical. Jitter fixtures explicitly model added measurement noise and report it in evidence. Histograms contain counts rather than raw timing traces.
+The backend exposes this list through `GET /api/fixtures`, and anything not on it is rejected before the engine runs.
 
-Run the Member B T1–T6 demonstration from the project root with `python -m engine.evaluation`. It prints a JSON report containing each case's inputs, expected behavior, actual output, evidence, and pass/fail status. These checks verify engine behavior and fixture wiring; timing values and statistical decisions are observations, not fixed expected answers.
+## 🤝 2.5 Contract with the backend
 
-## 2.2 Evaluation coverage
+- `run_analysis(req: EngineRequest)` returns a dictionary validated by `EngineResult`: `decision`, `severity`, `confidence`, `p_value`, `effect_size`, `ci_low`, `ci_high`, `evidence`, `reasons` (at least one), `rule_name`, `rule_version`, `engine_version`, `thresholds`.
+- The engine **validates its own input as well**, so it stays safe if called from somewhere else:
 
-| Proposal case | Engine evidence |
+| Field | Rule |
 |---|---|
-| T1: Sample-size sensitivity | Configurable samples per group; sample count and interval are returned |
-| T2: Jitter | Paired jitter fixtures and explicit jitter metadata |
-| T3: Prefix guesses | No-match, one-byte, four-byte, and full-match fixtures |
-| T4: Constant-time comparison | Same fixtures can run against `hmac.compare_digest` |
-| T5: Confidence intervals | Paired t confidence interval in nanoseconds, at the configured `ci_level` |
-| T6: Reproducibility | Seeded schedule SHA-256 and deterministic jitter stream |
+| `implementation` | `vulnerable` or `constant_time` |
+| `fixture_id` | Must be on the whitelist |
+| `sample_size` | Integer from 30 to 5000 (booleans rejected) |
+| `warmup_runs` | Integer from 0 to 500 |
+| `seed` | `None`, or an integer from 0 to 2147483647 |
+| `thresholds` | Exactly `alpha`, `min_effect_size` and `ci_level`, each finite and within its range |
 
-This is a local microbenchmark, not a proof of constant-time behavior. CPU scheduling, runtime and hardware effects can dominate small timing differences; use larger sample sizes, compare both implementations, and treat inconclusive/no-leak decisions cautiously.
+- Invalid input raises `ValueError`. The backend turns any engine exception into the generic `ENGINE_FAILED` code and keeps the traceback in the server log (see Part 1).
+- The backend runs one measurement at a time, so concurrent requests cannot disturb each other's timings.
+
+## 📊 2.6 Result and evidence fields
+
+These fields are what Member C's dashboard and charts read from `GET /api/submissions/{id}/result`.
+
+| Field | Content |
+|---|---|
+| `p_value`, `effect_size`, `ci_low`, `ci_high` | Paired t-test p-value, Cohen's dz, and the interval on the mean difference in ns |
+| `evidence.mean_difference_ns` | Mean fixture-minus-control difference |
+| `evidence.comparison` | For example `prefix_4 versus no_match` |
+| `evidence.implementation`, `fixture_description` | What was measured |
+| `evidence.sample_size_per_group`, `warmup_runs_per_group`, `timed_calls_per_sample` | Measurement settings |
+| `evidence.histogram` | `bin_edges_ns` (21 edges), `baseline_counts`, `fixture_counts` (20 bins each, shared bins, ready to chart) |
+| `evidence.baseline_summary_ns`, `fixture_summary_ns` | Mean, median and standard deviation of each group |
+| `evidence.paired_difference_summary_ns` | Mean and standard deviation of the paired differences |
+| `evidence.jitter` | Whether jitter was injected, its model and standard deviation, how many samples were clamped, and a digest of the jitter sequence |
+| `evidence.seed`, `schedule_sha256` | Reproducibility metadata |
+| `evidence.confidence_interpretation` | States that `confidence` is a CI level, not a posterior probability |
+
+Histograms hold counts, not raw timing traces, which keeps stored evidence small and avoids retaining unnecessary data.
+
+## 🛠️ 2.7 Mitigation recommendations (FR-6)
+
+Every result carries a plain-language explanation in `reasons`, chosen by the decision:
+
+| Decision | What the reasons say |
+|---|---|
+| `leak_detected` | Reports how many ns slower or faster the fixture was than the control, with the p-value and effect size, and recommends a fixed-length constant-time comparison such as `hmac.compare_digest` and not revealing comparison progress through responses |
+| `no_leak_detected` | States that no significant difference above the effect-size threshold was found, that this does not prove the implementation is constant-time, and recommends continuing to use a constant-time comparison |
+| `inconclusive` | Recommends collecting more samples or reducing jitter, and using a constant-time comparison while the result is unresolved |
+
+The recommendation is chosen per decision, not per individual finding. The backend stores it with the result and includes it in the exported report.
+
+## ⚠️ 2.8 Threat model (engine portion)
+
+| # | Threat | Mitigation | Evidence |
+|---|---|---|---|
+| E01 | Untrusted or malformed input reaching the measurement code | Engine-side validation of every field, fixture whitelist, finite and bounded thresholds | `test_invalid_engine_requests_are_rejected` |
+| E02 | Engine used to probe real systems | Fixtures are local byte strings compared in-process; the engine performs no network or file access and users cannot supply a target | `test_fixtures_are_fixed_width_and_prefix_controlled` |
+| E03 | False alarms or missed leaks caused by timing noise | Paired design, randomized order within each pair, warm-up, batches of 64 calls, and three conditions (significance, interval, effect size) before a leak is called; an explicit `inconclusive` outcome | `test_statistical_decision_uses_significance_effect_and_interval` |
+| E04 | Misreading `confidence` as a probability | Documented as the CI level and stated in every result's evidence | `test_analysis_returns_schema_valid_chart_ready_measurements` |
+| E05 | Results that cannot be reproduced or audited | Seed, schedule digest, jitter digest, threshold snapshot, rule and engine versions stored with each result | `test_seed_reproduces_measurement_schedule_and_jitter` |
+| E06 | Resource exhaustion through huge runs | Sample size capped at 5000, warm-up at 500, fixed 64 calls per sample; the backend adds a lock and rate limits | `test_invalid_engine_requests_are_rejected` |
+| E07 | Numeric edge cases (NaN, infinity, zero variance, booleans passed as integers) | Finite checks, strict integer type checks, defined behavior for zero variance | `test_invalid_engine_requests_are_rejected`, `test_statistical_decision_uses_significance_effect_and_interval` |
+| E08 | Overclaiming safety from a "no leak" result | Reasons state that the result is not proof of constant-time behavior | `test_member_b_evaluation_reports_all_proposal_cases` |
+| E09 | Malformed engine output corrupting stored records | Output validated by `EngineResult` in the backend, failures become `ENGINE_FAILED` | `test_submissions_api.py` (Part 1) |
+
+## ✅ 2.9 Evaluation cases T1 to T6
+
+Run the demonstration from the project root:
+
+```
+python -m engine.evaluation
+```
+
+It prints a JSON report in which each case has its inputs, expected behavior, actual output, evidence and pass/fail status. The built-in checks verify engine behavior and fixture wiring. Timing values and statistical decisions are observations, not fixed expected answers.
+
+| Case | What the harness checks | Engine evidence |
+|---|---|---|
+| T1: Sample-size sensitivity | Runs of 30 and 300 samples report their requested counts and complete histograms | Configurable samples per group; the interval width is returned |
+| T2: Jitter | The jitter fixture reports enabled jitter, a 250 ns standard deviation and a 64-character sequence digest | Paired jitter fixtures and explicit jitter metadata |
+| T3: Prefix guesses | `no_match`, `prefix_1`, `prefix_4` and `full_match` report their documented prefix lengths | Four fixtures with controlled prefix length |
+| T4: Constant-time comparison | Both implementations run the same fixture and report their own identity | Same fixtures run against `hmac.compare_digest` |
+| T5: Confidence intervals | `confidence` equals the configured `ci_level` and the bounds are finite and ordered | Paired t interval in ns at the configured `ci_level` |
+| T6: Reproducibility | Two seeded runs produce identical schedule and jitter digests | Schedule SHA-256 and deterministic jitter stream |
+
+## 🧾 2.10 Test evidence (Member B portion)
+
+13 automated tests in `backend/tests/test_engine.py`, all passing. Together with Part 1, the full suite is 140 passing tests.
+
+| Test | Covers |
+|---|---|
+| `test_fixtures_are_fixed_width_and_prefix_controlled` | All fixtures are 32 bytes with the documented prefix and mismatch positions |
+| `test_analysis_returns_schema_valid_chart_ready_measurements` | Output validates against `EngineResult`; histogram has 21 edges and counts equal the sample size |
+| `test_seed_reproduces_measurement_schedule_and_jitter` | Same seed gives the same schedule and jitter digests |
+| `test_constant_time_mode_runs_through_same_contract` | Constant-time mode returns a valid result |
+| `test_invalid_engine_requests_are_rejected` (7 cases) | Unknown implementation or fixture, sample size too small or a boolean, warm-up too large, negative seed, NaN threshold |
+| `test_statistical_decision_uses_significance_effect_and_interval` | Leak, no-leak and inconclusive branches on constructed data |
+| `test_member_b_evaluation_reports_all_proposal_cases` | T1 to T6 all present with inputs, expected, actual, evidence and a passing status |
 
 ---
 

@@ -7,9 +7,18 @@ PLACEHOLDER_KEYS = {"", "change-me", "change-me-to-a-long-random-string"}
 MIN_KEY_LENGTH = 32
 
 
+# def find_problems(s: Settings) -> list[str]:
+#     problems = []
+#     if s.secret_key in PLACEHOLDER_KEYS or len(s.secret_key) < MIN_KEY_LENGTH:
+#         problems.append(f"SECRET_KEY is a placeholder or shorter than {MIN_KEY_LENGTH} characters.")
+#     return problems
+
 def find_problems(s: Settings) -> list[str]:
     problems = []
-    if s.secret_key in PLACEHOLDER_KEYS or len(s.secret_key) < MIN_KEY_LENGTH:
+    weak = (s.secret_key in PLACEHOLDER_KEYS
+            or s.secret_key.startswith(("change-me", "replace-with"))
+            or len(s.secret_key) < MIN_KEY_LENGTH)
+    if weak:
         problems.append(f"SECRET_KEY is a placeholder or shorter than {MIN_KEY_LENGTH} characters.")
     return problems
 
