@@ -34,15 +34,15 @@ Open:
 - Interactive API documentation: <http://127.0.0.1:8000/api/docs>
 - Health check: <http://127.0.0.1:8000/api/health>
 
-The API and engine can be exercised from the interactive documentation. Create
-the first administrator from PowerShell; the password is requested interactively:
+Create the first administrator from PowerShell; the password is requested interactively:
 
 ```powershell
 docker compose run --rm --no-deps app python -m scripts.seed_admin --username admin
 ```
 
-The homepage is currently a placeholder, so use `/api/docs` to sign in and run
-measurements. The SQLite database is stored in the `sidewatch-data` Docker
+Then sign in at <http://127.0.0.1:8000/> to run measurements, read results and
+charts, and (as admin) manage rules, users and the audit log. The API can also be
+exercised from `/api/docs`. The SQLite database is stored in the `sidewatch-data` Docker
 volume and persists when the container is stopped or removed.
 
 Stop the service without deleting its data:
@@ -83,5 +83,5 @@ measurements will still vary.
 - `backend/` — FastAPI application, authentication, persistence, and tests
 - `engine/` — timing comparison implementations and safe demo fixtures
 - `scripts/` — administrative setup utilities
-- `frontend/` — static homepage
+- `frontend/` — browser interface (plain HTML, CSS and JavaScript; no build step)
 - `document.md` — project proposal mapping, architecture, and implementation details

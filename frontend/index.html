@@ -3,13 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SideWatch</title>
+  <meta name="color-scheme" content="light dark">
+  <title>SideWatch · Timing Leakage Lab</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2311202b'/%3E%3Cpolyline points='3,21 9,21 12,8 16,24 20,12 23,21 29,21' fill='none' stroke='%237fe0cd' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <main>
-    <h1>SideWatch</h1>
-    <p>The backend is running. Member C's interface replaces this file.</p>
-    <p><a href="/api/docs">API documentation</a></p>
-  </main>
+  <a class="skip" href="#main">Skip to content</a>
+  <div id="root"></div>
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">SideWatch needs JavaScript to run. Please enable it for this site.</p></noscript>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
