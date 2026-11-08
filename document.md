@@ -446,6 +446,54 @@ It prints a JSON report in which each case has its inputs, expected behavior, ac
 
 # 🖥️ Part 3: Frontend, Reporting and Integration (Member C)
 
+The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, served by the same FastAPI app. There is no build step, no npm and no CDN, so it runs offline and satisfies the page CSP (no inline script or style).
+
+## 🧭 3.1 Screens
+
+| Screen | Roles | What it does |
+|---|---|---|
+| Sign in | all | Login with safe errors, rate-limit and lockout messages, and resumed sessions after a reload |
+| Overview | all | Counts of recent leaks, clean runs and failures, one-click examples (leak, control, too few samples, noisy), latest results |
+| New measurement | admin, operator | Single run, **prefix sweep** (1, 4 and 32 correct bytes, one or both implementations) and **face-off** (vulnerable vs constant-time) |
+| Result | all | Verdict sentence, severity, timing curves, confidence interval, the three rule checks, recommendations, reproduction settings, report export |
+| History | all (role-scoped by the server) | Filters, search, paging, and pick two runs to compare |
+| Compare | all | Side-by-side evidence, and a check that a repeated run used the same schedule hash (T6) |
+| Prefix sweep | all | Mean difference against correct prefix length, with confidence intervals (T3, T4) |
+| Rules | admin edits, operator reads | The three thresholds with bounds, version, and a confirmation dialog on change |
+| Users | admin | Create accounts, activate or deactivate, reset passwords (confirmed) |
+| Audit log | admin | Filter by action and outcome, expand details, verify the hash chain |
+| Account | all | Change own password |
+
+## 🔌 3.2 How it talks to the backend
+
+- `frontend/js/api.js` is the only file with URLs. It uses same-origin `fetch`, so there is no CORS.
+- The CSRF token is held in memory only. On load the page calls `GET /api/auth/me` and then `GET /api/auth/csrf`. If a request fails with `CSRF_FAILED` (for example after another tab rotated the token) it refreshes the token and retries once.
+- Any `AUTH_REQUIRED` or `AUTH_SESSION_EXPIRED` response returns the user to the sign-in screen with a message.
+- Errors show the backend's safe message plus its `request_id` reference. Raw response bodies are never displayed.
+- Rule changes and password resets send `confirm: true` only after an on-screen confirmation.
+
+## 🛡️ 3.3 Security controls in the interface
+
+| Threat | Control | Evidence |
+|---|---|---|
+| Script injection through server text (labels, audit details, reasons) | Every dynamic value is inserted with `createTextNode`; the code never uses `innerHTML` or similar | `test_interface_code_never_writes_raw_html`; manual check with an injected `<img onerror>` |
+| Inline script or third-party code | Strict page CSP, no inline script or style, no external hosts | `test_index_has_no_inline_script_style_or_handlers`, `test_frontend_served_with_page_csp` |
+| CSRF | Token in memory, sent as `X-CSRF-Token` on every state-changing call, one safe retry | Integration run "stale CSRF token auto-recovers" |
+| Token theft from storage | Nothing is stored in `localStorage` or `sessionStorage`; the session cookie is HttpOnly | Same code scan test |
+| Showing actions a role cannot use | Menu, routes and buttons follow the role, but the server remains the authority | Integration runs: viewer `POST /api/submissions` returns `ACCESS_DENIED` |
+| Accidental high-impact changes | Confirmation dialogs for rule changes, deactivation and password resets | Integration run: cancelling a rule change sends nothing |
+| Misleading results | A permanent caveat that a clean result is not proof of constant-time; the CI level is never called a probability | Result screen text |
+
+## 🧪 3.4 Interface tests
+
+The interface was exercised against the real running backend (jsdom, real HTTP, real cookies and CSRF) rather than a mock. Checks covered: login failure and success, role menus, route guards, a single run, sweep (6 server runs), face-off, history with comparison, run-again with the same seed (identical schedule hash), rule change with confirm and cancel, user creation, audit verification, stale CSRF recovery, expired session, empty states, and sign-out. Three static checks were added to `backend/tests/test_frontend.py`.
+
+## ⚠️ 3.5 Known limits
+
+- The history table needs a result for every row, so it fetches results in small batches. Adding `decision` and `severity` to the submission list response would remove those extra calls.
+- Mean timing differences are sensitive to rare large spikes. Wide intervals on short runs are expected; more samples narrow them.
+- The timing curves are a normal approximation from each group's mean and standard deviation, because the engine returns only 20 histogram bins. The raw histogram is available beside them.
+
 
 
 ---
