@@ -79,4 +79,6 @@ Content-Length. The size guard rejects excessive bodies before the API runs,
 accepts a body exactly at the limit and preserves its bytes. HTTP protocol parsers
 may independently reject invalid framing before it reaches the application.
 
-Browser QA and fresh-install/Docker verification remain separate packaging work.
+For fresh-install verification and the normal application's packaging smoke
+command, see [the packaging guide](../PACKAGING.md). Browser interaction remains
+a separate manual check; Docker verification requires an available Docker runtime.
