@@ -85,3 +85,10 @@ measurements will still vary.
 - `scripts/` — administrative setup utilities
 - `frontend/` — browser interface (plain HTML, CSS and JavaScript; no build step)
 - `document.md` — project proposal mapping, architecture, and implementation details
+
+## Documentation
+
+- [Setup and packaging](PACKAGING.md)
+- [User and administrator guide](docs/USER_GUIDE.md)
+- [QA report](docs/QA_REPORT.md)
+- [Demo guide](docs/DEMO.md)
