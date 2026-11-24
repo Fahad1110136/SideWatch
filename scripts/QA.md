@@ -49,5 +49,34 @@ validate engine behavior and fixture wiring. Inspect and interpret the actual
 measurements separately. A seed reproduces scheduling and injected jitter, not
 wall-clock timing; a clean verdict does not prove constant-time behavior.
 
-This command does not yet perform browser QA, real process-restart checks, or
-fresh-install/Docker verification. Those belong to the subsequent QA commits.
+## Security and restart checks
+
+The pytest stage also runs `backend/tests/test_security_live.py` against real
+Uvicorn subprocesses on dynamically assigned localhost ports. Each test creates
+its own temporary SQLite database, secret and accounts, without using the local
+application database or administrator. HTTP clients ignore proxy environment
+settings so these requests stay on localhost. No server needs to be started manually.
+
+These checks cover malformed and oversized input, anonymous and restricted-viewer
+denials, repeated submissions, failed engine output, exception handling, and a
+successful measurement after a failure. The restart check kills a server during
+a measurement, starts it again against the same temporary database and secret,
+and verifies recovery, preserved results and rule versions, accepted active
+sessions, rejected revoked sessions and audit-chain integrity. A second restart
+checks recovery is not duplicated.
+
+`backend/tests/live_server.py` is a dedicated test entry point. It injects an
+engine exception, malformed output and a blocked measurement for deterministic
+failure tests; normal `no_match` runs still use the real engine. These hooks are
+not in the application entry point. The restart test demonstrates recovery from
+an in-flight engine interruption; it does not simulate interruption during every
+database write. Child logs live in pytest's temporary test directories and are
+shown on startup failures. Processes and clients are cleaned up even on failure.
+
+`backend/tests/test_security_qa.py` additionally checks session-bound CSRF tokens
+and counts actual ASGI request bytes, including streams with absent or understated
+Content-Length. The size guard rejects excessive bodies before the API runs,
+accepts a body exactly at the limit and preserves its bytes. HTTP protocol parsers
+may independently reject invalid framing before it reaches the application.
+
+Browser QA and fresh-install/Docker verification remain separate packaging work.
