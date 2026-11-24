@@ -1,0 +1,2 @@
+# Preserve evidence/protocol bytes across Windows and Unix checkouts.
+docs/evidence/* text eol=lf

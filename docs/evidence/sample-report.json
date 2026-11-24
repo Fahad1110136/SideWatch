@@ -1,0 +1,167 @@
+{
+  "report_version": "1",
+  "generated_at": "2026-11-24T20:53:56.027324+00:00",
+  "submission": {
+    "id": "18fc97fa049a4d89a99feff5772c562f",
+    "label": "Packaging smoke",
+    "implementation": "vulnerable",
+    "fixture_id": "prefix_4",
+    "sample_size": 60,
+    "warmup_runs": 5,
+    "seed": 2026,
+    "status": "completed",
+    "created_at": "2026-11-24T20:53:55.988728+00:00",
+    "completed_at": "2026-11-24T20:53:56.003829+00:00"
+  },
+  "result": {
+    "decision": "leak_detected",
+    "severity": "high",
+    "confidence": 0.99,
+    "p_value": 5.990445575164784e-12,
+    "effect_size": 1.1063667159052304,
+    "ci_low": 52.17218650589544,
+    "ci_high": 99.18198016077122,
+    "evidence": {
+      "method": "paired_wall_clock_microbenchmark",
+      "comparison": "prefix_4 versus no_match",
+      "implementation": "vulnerable",
+      "fixture_description": "Candidate matches four leading bytes before the first mismatch.",
+      "sample_size_per_group": 60,
+      "warmup_runs_per_group": 5,
+      "timed_calls_per_sample": 64,
+      "mean_difference_ns": 75.67708333333333,
+      "fixture_matching_prefix_bytes": 4,
+      "jitter": {
+        "injected": false,
+        "model": "independent Gaussian overlay on each measured sample",
+        "stddev_ns": 0.0,
+        "clamped_samples": 0,
+        "sequence_sha256": null
+      },
+      "seed": 2026,
+      "schedule_sha256": "198896ad62d5439723a5fa7341812b2e9c6e1a9821b5021ae79bf7e2e4ab9361",
+      "confidence_interpretation": "configured two-sided paired t confidence-interval level; not a posterior probability",
+      "histogram": {
+        "bin_edges_ns": [
+          168.75,
+          195.15625,
+          221.5625,
+          247.96875,
+          274.375,
+          300.78125,
+          327.1875,
+          353.59375,
+          380.0,
+          406.40625,
+          432.8125,
+          459.21875,
+          485.625,
+          512.03125,
+          538.4375,
+          564.84375,
+          591.25,
+          617.65625,
+          644.0625,
+          670.46875,
+          696.875
+        ],
+        "baseline_counts": [
+          56,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ],
+        "fixture_counts": [
+          0,
+          0,
+          0,
+          49,
+          10,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "baseline_summary_ns": {
+        "mean": 185.44270833333334,
+        "median": 171.875,
+        "stddev": 67.7511289812927
+      },
+      "fixture_summary_ns": {
+        "mean": 261.1197916666667,
+        "median": 251.5625,
+        "stddev": 24.523888744030597
+      },
+      "paired_difference_summary_ns": {
+        "mean": 75.67708333333333,
+        "stddev": 68.40144614384414
+      }
+    },
+    "reasons": [
+      "The fixture was 75.68 ns slower than the no-match control (paired p=5.99e-12, Cohen's dz=1.106).",
+      "Use a fixed-length constant-time comparison such as hmac.compare_digest; do not reveal comparison progress through responses."
+    ],
+    "rule_name": "paired_timing_leakage",
+    "rule_version": "1",
+    "engine_version": "1.0.0",
+    "thresholds": {
+      "alpha": 0.01,
+      "min_effect_size": 0.2,
+      "ci_level": 0.99
+    }
+  },
+  "evidence_links": {
+    "result_id": "3325efd7f9db46eab11a1a6032509594",
+    "audit_events": [
+      {
+        "id": 4,
+        "action": "submission.create",
+        "outcome": "success",
+        "timestamp": "2026-11-24T20:53:55.991730+00:00"
+      },
+      {
+        "id": 5,
+        "action": "submission.run",
+        "outcome": "success",
+        "timestamp": "2026-11-24T20:53:56.011330+00:00"
+      }
+    ]
+  },
+  "reproduction": {
+    "reproducible_with_seed": true,
+    "how": "Re-run with the same implementation, fixture, sample size, warm-up runs, seed and thresholds listed in this report."
+  },
+  "integrity": {
+    "algorithm": "SHA-256",
+    "covers": "every field except integrity",
+    "report_digest": "dc87626c83b697bb396d1ef61ec7a1f9732b424760178053d5ab337d1438bc42"
+  }
+}

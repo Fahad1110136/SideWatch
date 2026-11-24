@@ -1,0 +1,63 @@
+{
+  "started_at_utc": "2026-11-24T20:52:34.695525+00:00",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows",
+    "platform_release": "11",
+    "machine": "AMD64",
+    "packages": {
+      "pytest": "9.2.0",
+      "fastapi": "0.115.14",
+      "httpx": "0.28.1",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "sqlalchemy": "2.0.57",
+      "pydantic-settings": "2.16.2"
+    },
+    "git_revision": "d651d53509b0cc1b9e5067c7804caec6a2af8de1",
+    "working_tree_dirty": true
+  },
+  "checks": {
+    "pytest": {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--junitxml=PROJECT_ROOT/artifacts/qa/RUN/pytest.xml"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 42.078,
+      "passed": true,
+      "error": null,
+      "results": {
+        "tests": 172,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 172
+      }
+    },
+    "evaluation": {
+      "command": [
+        "python",
+        "-m",
+        "engine.evaluation"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 1.468,
+      "passed": true,
+      "error": null,
+      "results": {
+        "total": 6,
+        "passed": 6,
+        "engine_version": "1.0.0"
+      }
+    }
+  },
+  "passed": true,
+  "finished_at_utc": "2026-11-24T20:53:18.431228+00:00",
+  "sanitization": "Absolute project paths in commands replaced by PROJECT_ROOT; no environment secrets are recorded."
+}

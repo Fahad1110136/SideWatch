@@ -1,0 +1,709 @@
+{
+  "started_at_utc": "2026-11-24T20:53:41.815299+00:00",
+  "finished_at_utc": "2026-11-24T20:53:42.194475+00:00",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows",
+    "platform_release": "11",
+    "machine": "AMD64",
+    "packages": {
+      "pytest": "9.2.0",
+      "fastapi": "0.115.14",
+      "httpx": "0.28.1",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "sqlalchemy": "2.0.57",
+      "pydantic-settings": "2.16.2"
+    },
+    "git_revision": "d651d53509b0cc1b9e5067c7804caec6a2af8de1",
+    "working_tree_dirty": true
+  },
+  "protocol_sha256": "26e9d5888b2c0b81921867d4a00acb781e291a65ffd5a0daeaae2e41f31e1420",
+  "settings": {
+    "sample_size_per_group": 300,
+    "warmup_runs": 20,
+    "seeds": [
+      2026,
+      2027,
+      2028,
+      2029,
+      2030
+    ],
+    "thresholds": {
+      "alpha": 0.01,
+      "min_effect_size": 0.2,
+      "ci_level": 0.99
+    },
+    "run_order": "shuffled per seed"
+  },
+  "interpretation": "Exploratory one-host observations. Negative controls include hmac.compare_digest; alerts do not establish a defect in that comparator. Inconclusive outcomes are separate from explicit misses. Rates are not population accuracy estimates. Engine-call latency includes warm-up, sampling and statistics, but excludes HTTP/database/UI work.",
+  "metrics": {
+    "positive": {
+      "runs": 15,
+      "decisions": {
+        "leak_detected": 13,
+        "no_leak_detected": 1,
+        "inconclusive": 1
+      },
+      "inconclusive_fraction": 0.06666666666666667,
+      "detection_fraction": 0.8666666666666667,
+      "explicit_miss_fraction": 0.06666666666666667
+    },
+    "negative": {
+      "runs": 25,
+      "decisions": {
+        "no_leak_detected": 25
+      },
+      "inconclusive_fraction": 0.0,
+      "alert_fraction": 0.0
+    }
+  },
+  "latency_ms": {
+    "median": 6.81595,
+    "p95_nearest_rank": 23.2222,
+    "min": 3.0031,
+    "max": 49.1317
+  },
+  "runs": [
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_4",
+      "seed": 2026,
+      "expected_group": "negative",
+      "engine_call_ms": 5.0579,
+      "decision": "no_leak_detected",
+      "p_value": 0.9649805468968142,
+      "effect_size": -0.002536950537684074,
+      "ci_ns": [
+        -2.4998452668269007,
+        2.4165119334935676
+      ],
+      "mean_difference_ns": -0.041666666666666664,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "full_match",
+      "seed": 2026,
+      "expected_group": "negative",
+      "engine_call_ms": 4.8258,
+      "decision": "no_leak_detected",
+      "p_value": 0.4687815472292541,
+      "effect_size": -0.041880279287456385,
+      "ci_ns": [
+        -10.290991891294826,
+        5.790991891294826
+      ],
+      "mean_difference_ns": -2.25,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "full_match",
+      "seed": 2026,
+      "expected_group": "positive",
+      "engine_call_ms": 23.2222,
+      "decision": "leak_detected",
+      "p_value": 8.241631764863392e-275,
+      "effect_size": 8.094828123623751,
+      "ci_ns": [
+        727.0026602961188,
+        754.3931730372144
+      ],
+      "mean_difference_ns": 740.6979166666666,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "no_match",
+      "seed": 2026,
+      "expected_group": "negative",
+      "engine_call_ms": 9.4233,
+      "decision": "no_leak_detected",
+      "p_value": 0.5477946698903401,
+      "effect_size": -0.03474221599630209,
+      "ci_ns": [
+        -15.702935003719807,
+        9.786268337053139
+      ],
+      "mean_difference_ns": -2.9583333333333335,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_1",
+      "seed": 2026,
+      "expected_group": "negative",
+      "engine_call_ms": 3.4664,
+      "decision": "no_leak_detected",
+      "p_value": 0.05145943361711473,
+      "effect_size": 0.11289882088878457,
+      "ci_ns": [
+        -0.34097361960183714,
+        2.4347236196018374
+      ],
+      "mean_difference_ns": 1.046875,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "no_match",
+      "seed": 2026,
+      "expected_group": "negative",
+      "engine_call_ms": 3.5997,
+      "decision": "no_leak_detected",
+      "p_value": 0.237093381420221,
+      "effect_size": -0.0683962764358927,
+      "ci_ns": [
+        -6.4429959940652,
+        2.401329327398533
+      ],
+      "mean_difference_ns": -2.0208333333333335,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_4",
+      "seed": 2026,
+      "expected_group": "positive",
+      "engine_call_ms": 11.8393,
+      "decision": "leak_detected",
+      "p_value": 5.924407779049295e-23,
+      "effect_size": 0.6197664979195042,
+      "ci_ns": [
+        80.00644976696339,
+        130.95188356636996
+      ],
+      "mean_difference_ns": 105.47916666666667,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_1",
+      "seed": 2026,
+      "expected_group": "positive",
+      "engine_call_ms": 9.4937,
+      "decision": "leak_detected",
+      "p_value": 1.5666832949684189e-12,
+      "effect_size": 0.4261357503723859,
+      "ci_ns": [
+        21.247294283483733,
+        44.25270571651627
+      ],
+      "mean_difference_ns": 32.75,
+      "schedule_sha256": "f3ff696974115df1eeb5db597cdc5071ffdab5bc778b73481431c3d486b78929"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_4",
+      "seed": 2027,
+      "expected_group": "negative",
+      "engine_call_ms": 4.0551,
+      "decision": "no_leak_detected",
+      "p_value": 0.058484764893034905,
+      "effect_size": 0.10965725430995073,
+      "ci_ns": [
+        -1.0357702410939318,
+        6.712853574427265
+      ],
+      "mean_difference_ns": 2.8385416666666665,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "no_match",
+      "seed": 2027,
+      "expected_group": "negative",
+      "engine_call_ms": 3.9733,
+      "decision": "no_leak_detected",
+      "p_value": 0.9993565096261487,
+      "effect_size": -4.660199777793754e-05,
+      "ci_ns": [
+        -16.73270344823264,
+        16.722286781565977
+      ],
+      "mean_difference_ns": -0.005208333333333333,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "full_match",
+      "seed": 2027,
+      "expected_group": "negative",
+      "engine_call_ms": 3.315,
+      "decision": "no_leak_detected",
+      "p_value": 0.31024482604469766,
+      "effect_size": 0.0586838072662104,
+      "ci_ns": [
+        -1.0820913687628204,
+        2.4779247020961535
+      ],
+      "mean_difference_ns": 0.6979166666666666,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_4",
+      "seed": 2027,
+      "expected_group": "positive",
+      "engine_call_ms": 49.1317,
+      "decision": "no_leak_detected",
+      "p_value": 0.44327544707558836,
+      "effect_size": -0.04432277307375866,
+      "ci_ns": [
+        -1976.5282199477563,
+        1073.3511366144228
+      ],
+      "mean_difference_ns": -451.5885416666667,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_1",
+      "seed": 2027,
+      "expected_group": "negative",
+      "engine_call_ms": 5.5275,
+      "decision": "no_leak_detected",
+      "p_value": 0.4288362863765328,
+      "effect_size": -0.04574124405215225,
+      "ci_ns": [
+        -4.650376365802026,
+        2.4732930324686926
+      ],
+      "mean_difference_ns": -1.0885416666666667,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "no_match",
+      "seed": 2027,
+      "expected_group": "negative",
+      "engine_call_ms": 10.1285,
+      "decision": "no_leak_detected",
+      "p_value": 0.15197331079820733,
+      "effect_size": 0.08292260899021396,
+      "ci_ns": [
+        -6.699481326703969,
+        23.345314660037303
+      ],
+      "mean_difference_ns": 8.322916666666666,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "full_match",
+      "seed": 2027,
+      "expected_group": "positive",
+      "engine_call_ms": 23.2037,
+      "decision": "leak_detected",
+      "p_value": 2.264204308321451e-250,
+      "effect_size": 6.68286235231857,
+      "ci_ns": [
+        720.3768985708055,
+        753.3835180958613
+      ],
+      "mean_difference_ns": 736.8802083333334,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_1",
+      "seed": 2027,
+      "expected_group": "positive",
+      "engine_call_ms": 8.5806,
+      "decision": "leak_detected",
+      "p_value": 1.322103593851514e-57,
+      "effect_size": 1.1628602331302609,
+      "ci_ns": [
+        18.34702721476974,
+        23.767556118563597
+      ],
+      "mean_difference_ns": 21.057291666666668,
+      "schedule_sha256": "582cc8a6e837310a7604703a4a78c083e4052bd108f25eea511c1590cd226183"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "no_match",
+      "seed": 2028,
+      "expected_group": "negative",
+      "engine_call_ms": 3.3356,
+      "decision": "no_leak_detected",
+      "p_value": 0.1005821768401115,
+      "effect_size": 0.09509700108742275,
+      "ci_ns": [
+        -1.2254592738683292,
+        5.496292607201662
+      ],
+      "mean_difference_ns": 2.1354166666666665,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "full_match",
+      "seed": 2028,
+      "expected_group": "positive",
+      "engine_call_ms": 23.2291,
+      "decision": "leak_detected",
+      "p_value": 3.715689189336569e-205,
+      "effect_size": 4.66471767889515,
+      "ci_ns": [
+        722.9362103650168,
+        770.8658729683165
+      ],
+      "mean_difference_ns": 746.9010416666666,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "full_match",
+      "seed": 2028,
+      "expected_group": "negative",
+      "engine_call_ms": 4.7093,
+      "decision": "no_leak_detected",
+      "p_value": 0.43580567576461104,
+      "effect_size": 0.04505318745529752,
+      "ci_ns": [
+        -16.835139143601406,
+        31.335139143601406
+      ],
+      "mean_difference_ns": 7.25,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_4",
+      "seed": 2028,
+      "expected_group": "positive",
+      "engine_call_ms": 10.757,
+      "decision": "leak_detected",
+      "p_value": 9.444935090809652e-33,
+      "effect_size": 0.7793515223894195,
+      "ci_ns": [
+        67.23278665801381,
+        99.19429667531953
+      ],
+      "mean_difference_ns": 83.21354166666667,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "no_match",
+      "seed": 2028,
+      "expected_group": "negative",
+      "engine_call_ms": 9.8738,
+      "decision": "no_leak_detected",
+      "p_value": 0.5900892174848185,
+      "effect_size": -0.0311358298101833,
+      "ci_ns": [
+        -28.399973507388136,
+        18.618723507388136
+      ],
+      "mean_difference_ns": -4.890625,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_1",
+      "seed": 2028,
+      "expected_group": "positive",
+      "engine_call_ms": 8.807,
+      "decision": "leak_detected",
+      "p_value": 6.839312839742775e-32,
+      "effect_size": 0.7657683272712736,
+      "ci_ns": [
+        17.51149832196192,
+        26.01975167803808
+      ],
+      "mean_difference_ns": 21.765625,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_4",
+      "seed": 2028,
+      "expected_group": "negative",
+      "engine_call_ms": 4.9956,
+      "decision": "no_leak_detected",
+      "p_value": 0.5593383079518996,
+      "effect_size": 0.03374495548867253,
+      "ci_ns": [
+        -14.170815350114903,
+        22.420815350114903
+      ],
+      "mean_difference_ns": 4.125,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_1",
+      "seed": 2028,
+      "expected_group": "negative",
+      "engine_call_ms": 3.2229,
+      "decision": "no_leak_detected",
+      "p_value": 0.2690043383087519,
+      "effect_size": 0.0639366731342839,
+      "ci_ns": [
+        -1.6063108595871174,
+        4.002144192920451
+      ],
+      "mean_difference_ns": 1.1979166666666667,
+      "schedule_sha256": "50ccd2352cf9b767888da16bbb30766ea2896334edf81202f7ca0d0501e9dd2e"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "no_match",
+      "seed": 2029,
+      "expected_group": "negative",
+      "engine_call_ms": 3.0031,
+      "decision": "no_leak_detected",
+      "p_value": 0.540265824595704,
+      "effect_size": -0.03539825990262824,
+      "ci_ns": [
+        -2.2328739221979528,
+        1.3787072555312863
+      ],
+      "mean_difference_ns": -0.4270833333333333,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "no_match",
+      "seed": 2029,
+      "expected_group": "negative",
+      "engine_call_ms": 11.0876,
+      "decision": "no_leak_detected",
+      "p_value": 0.4375701251949115,
+      "effect_size": -0.04488000673111977,
+      "ci_ns": [
+        -71.81947922327058,
+        38.68406255660392
+      ],
+      "mean_difference_ns": -16.567708333333332,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_4",
+      "seed": 2029,
+      "expected_group": "positive",
+      "engine_call_ms": 10.4746,
+      "decision": "leak_detected",
+      "p_value": 9.735609281241777e-108,
+      "effect_size": 2.0203205384442255,
+      "ci_ns": [
+        88.29972411644117,
+        102.42944255022549
+      ],
+      "mean_difference_ns": 95.36458333333333,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_4",
+      "seed": 2029,
+      "expected_group": "negative",
+      "engine_call_ms": 4.6102,
+      "decision": "no_leak_detected",
+      "p_value": 0.38303440205576295,
+      "effect_size": 0.050437617096667636,
+      "ci_ns": [
+        -19.869106203743833,
+        40.067022870410504
+      ],
+      "mean_difference_ns": 10.098958333333334,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_1",
+      "seed": 2029,
+      "expected_group": "negative",
+      "engine_call_ms": 3.0607,
+      "decision": "no_leak_detected",
+      "p_value": 0.043237001809973544,
+      "effect_size": -0.11720472695201319,
+      "ci_ns": [
+        -1.5654388150891672,
+        0.19043881508916727
+      ],
+      "mean_difference_ns": -0.6875,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_1",
+      "seed": 2029,
+      "expected_group": "positive",
+      "engine_call_ms": 8.4429,
+      "decision": "leak_detected",
+      "p_value": 6.610505290097404e-115,
+      "effect_size": 2.1619453160747715,
+      "ci_ns": [
+        20.661163250739406,
+        23.73467008259393
+      ],
+      "mean_difference_ns": 22.197916666666668,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "full_match",
+      "seed": 2029,
+      "expected_group": "positive",
+      "engine_call_ms": 23.0894,
+      "decision": "leak_detected",
+      "p_value": 1.9829265703072898e-296,
+      "effect_size": 9.581670861693102,
+      "ci_ns": [
+        724.2572040083181,
+        747.2427959916819
+      ],
+      "mean_difference_ns": 735.75,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "full_match",
+      "seed": 2029,
+      "expected_group": "negative",
+      "engine_call_ms": 3.8207,
+      "decision": "no_leak_detected",
+      "p_value": 0.17317935731880366,
+      "effect_size": 0.07882668749035113,
+      "ci_ns": [
+        -2.092357676642693,
+        6.748607676642693
+      ],
+      "mean_difference_ns": 2.328125,
+      "schedule_sha256": "4b721a1d8c2514b833f77120b93d3f2d72cd0bf8de6e4a8b6dbd8a8c9d19778c"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_4",
+      "seed": 2030,
+      "expected_group": "negative",
+      "engine_call_ms": 3.0388,
+      "decision": "no_leak_detected",
+      "p_value": 0.06965106430635992,
+      "effect_size": -0.10511849245100124,
+      "ci_ns": [
+        -3.3958841227152012,
+        0.593800789381868
+      ],
+      "mean_difference_ns": -1.4010416666666667,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "prefix_1",
+      "seed": 2030,
+      "expected_group": "negative",
+      "engine_call_ms": 3.3011,
+      "decision": "no_leak_detected",
+      "p_value": 0.05705307587243016,
+      "effect_size": -0.11029032406453475,
+      "ci_ns": [
+        -2.4675478836293196,
+        0.37379788362931965
+      ],
+      "mean_difference_ns": -1.046875,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_1",
+      "seed": 2030,
+      "expected_group": "positive",
+      "engine_call_ms": 9.0846,
+      "decision": "inconclusive",
+      "p_value": 0.0014007961510378846,
+      "effect_size": 0.18617652019403913,
+      "ci_ns": [
+        3.2373950993967426,
+        29.783438233936593
+      ],
+      "mean_difference_ns": 16.510416666666668,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "no_match",
+      "seed": 2030,
+      "expected_group": "negative",
+      "engine_call_ms": 8.1044,
+      "decision": "no_leak_detected",
+      "p_value": 0.2722903813069813,
+      "effect_size": 0.0634987851906403,
+      "ci_ns": [
+        -1.0107294879562407,
+        2.500312821289574
+      ],
+      "mean_difference_ns": 0.7447916666666666,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "full_match",
+      "seed": 2030,
+      "expected_group": "negative",
+      "engine_call_ms": 4.0305,
+      "decision": "no_leak_detected",
+      "p_value": 0.9049166333118167,
+      "effect_size": -0.006902461816055874,
+      "ci_ns": [
+        -9.687814692347992,
+        8.833648025681324
+      ],
+      "mean_difference_ns": -0.4270833333333333,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "prefix_4",
+      "seed": 2030,
+      "expected_group": "positive",
+      "engine_call_ms": 10.1422,
+      "decision": "leak_detected",
+      "p_value": 1.799486923598022e-111,
+      "effect_size": 2.0933251701593623,
+      "ci_ns": [
+        79.50289795433389,
+        91.74710204566611
+      ],
+      "mean_difference_ns": 85.625,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "vulnerable",
+      "fixture_id": "full_match",
+      "seed": 2030,
+      "expected_group": "positive",
+      "engine_call_ms": 23.1832,
+      "decision": "leak_detected",
+      "p_value": 3.850422116339688e-211,
+      "effect_size": 4.89453588571962,
+      "ci_ns": [
+        718.5832181648937,
+        763.9167818351063
+      ],
+      "mean_difference_ns": 741.25,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    },
+    {
+      "implementation": "constant_time",
+      "fixture_id": "no_match",
+      "seed": 2030,
+      "expected_group": "negative",
+      "engine_call_ms": 3.0048,
+      "decision": "no_leak_detected",
+      "p_value": 0.5026606453171464,
+      "effect_size": 0.03874727257652557,
+      "ci_ns": [
+        -5.173807117937901,
+        8.788390451271235
+      ],
+      "mean_difference_ns": 1.8072916666666667,
+      "schedule_sha256": "3d97aea26b073d1a01fadfe7714379d9f54624c8edc010a27170cac3e8a28fa8"
+    }
+  ]
+}
