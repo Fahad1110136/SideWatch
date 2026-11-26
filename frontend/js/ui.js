@@ -1,5 +1,3 @@
-// DOM helpers. All dynamic text goes through createTextNode (never raw HTML), so anything
-// the server returns - labels, audit details, reasons - can never inject markup.
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 function apply(el, props) {
@@ -102,3 +100,6 @@ export const empty = (title, text, action) => h("div", { class: "empty" }, h("h3
 export function stat(label, value, sub, tone) {
   return h("div", { class: `stat${tone ? " tone-" + tone : ""}` }, h("dt", {}, label), h("dd", {}, value), sub ? h("div", { class: "stat-sub" }, sub) : null);
 }
+
+export const skeleton = () => h("div", { class: "skeleton", role: "status" }, h("span", { class: "sr-only" }, "Loading…"),
+  h("div", { class: "sk sk-title" }), h("div", { class: "sk sk-row" }), h("div", { class: "sk sk-row" }), h("div", { class: "sk sk-block" }));

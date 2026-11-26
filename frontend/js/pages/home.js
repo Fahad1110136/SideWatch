@@ -2,7 +2,7 @@ import { api } from "../api.js";
 import { h, pageHead, stat, badge, fmtDate, fmtNs, fmtSigned, empty } from "../ui.js";
 import { withResults } from "../data.js";
 import { DECISIONS, IMPLEMENTATIONS, FIXTURES, PRESETS } from "../config.js";
-import { traceGlyph } from "../charts.js";
+import { traceGlyph, byteTower } from "../charts.js";
 
 export async function homePage({ user }) {
   const canRun = user.role !== "viewer";
@@ -16,6 +16,17 @@ export async function homePage({ user }) {
   root.append(pageHead(`Welcome, ${user.username}`,
     user.role === "viewer" ? "You can review completed measurements." : "Run a measurement, then read the evidence behind the verdict.",
     canRun ? h("a", { class: "btn btn-primary", href: "#/run" }, "New measurement") : null));
+
+  const newest = done[0];
+  const nd = newest && DECISIONS[newest.result.decision];
+  const pre = newest ? newest.result.evidence.fixture_matching_prefix_bytes : 0;
+  root.append(h("section", { class: "hero" },
+    h("div", { class: "hero-text" },
+      h("h2", {}, nd ? nd.label : "Timing, made visible"),
+      h("p", {}, newest ? `Latest run: ${newest.sub.label}. Lit layers show how many leading bytes of the guess were correct.`
+                        : "Each layer is one byte of a guess. If a comparison stops at the first wrong byte, its running time can reveal how many were right."),
+      newest ? h("a", { href: `#/results/${newest.sub.id}` }, "Open this result") : null),
+    byteTower(Math.min(8, pre >= 32 ? 8 : pre), { tone: nd ? nd.tone : "clean", size: "sm" })));
 
   root.append(h("dl", { class: "stats" },
     stat("Recent runs", rows.length, "latest 20 you can see"),

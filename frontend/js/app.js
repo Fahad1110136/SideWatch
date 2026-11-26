@@ -1,5 +1,6 @@
 import { api } from "./api.js";
-import { h, hs, errorText, alertBox, spinner, badge } from "./ui.js";
+import { h, hs, errorText, alertBox, spinner, skeleton, badge } from "./ui.js";
+import { enhance, initFx } from "./fx.js";
 import { loginPage } from "./pages/login.js";
 import { homePage } from "./pages/home.js";
 import { runPage } from "./pages/run.js";
@@ -84,11 +85,12 @@ async function route() {
   if (!def) { navigate(""); return; }
   if (!def.roles.includes(user.role)) { navigate(""); return; }
   renderNav(["results", "compare", "sweep"].includes(name) ? "history" : name);
-  main.replaceChildren(spinner());
+  main.replaceChildren(skeleton());
   try {
     const node = await def.page({ user, args: parts.slice(1).map(decodeURIComponent), navigate });
     if (token !== routeToken || !main) return;  // user moved on (or signed out) while we were loading
     main.replaceChildren(node);
+    enhance(node);
     main.focus({ preventScroll: true });
     window.scrollTo(0, 0);
     document.title = (node.dataset?.title ? node.dataset.title + " · " : "") + "SideWatch";
@@ -105,6 +107,7 @@ function startApp() {
   route();
 }
 
+initFx();
 window.addEventListener("hashchange", route);
 window.addEventListener("sw:unauthenticated", () => { if (user) showLogin("Your session ended. Please sign in again."); });
 

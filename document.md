@@ -464,6 +464,7 @@ The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, ser
 | `frontend/js/app.js` | Shell, role-aware navigation, hash router with role guards, session resume |
 | `frontend/js/api.js` | The only file with URLs. CSRF handling, safe error mapping, report download |
 | `frontend/js/config.js` | Constants mirroring the server contract (fixtures, limits, rule bounds) |
+| `frontend/js/fx.js` | Visual effects: scroll reveal, 3D tilt, pointer and scroll parallax, count-up numbers, scroll progress bar, back-to-top |
 | `frontend/js/data.js` | Result batching and the three rule checks shown to the user |
 | `frontend/js/ui.js` | DOM helpers (text only), dialogs, toasts, form fields |
 | `frontend/js/charts.js` | Dependency-free SVG charts |
@@ -475,7 +476,7 @@ The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, ser
 | Screen | Roles | What it does |
 |---|---|---|
 | Sign in | all | Login with safe errors, rate-limit and lockout messages, and resumed sessions after a reload |
-| Overview | all | Counts of recent leaks, clean runs and failures, one-click examples (leak, control, too few samples, noisy), latest results |
+| Home | all | Scroll-driven story with a pinned 3D scene, then counts of recent leaks, clean runs and failures, one-click examples (leak, control, too few samples, noisy), latest results and links to every other page |
 | New measurement | admin, operator | Single run, **prefix sweep** (1, 4 and 32 correct bytes, one or both implementations) and **face-off** (vulnerable vs constant-time) |
 | Result | all | Verdict sentence, severity, confidence level, timing curves, confidence interval, the three rule checks, recommendations, reproduction settings, export and print |
 | History | all (role-scoped by the server) | Filters for implementation and status (server side) and for decision, severity and label (on the loaded page), paging, pick two runs to compare |
@@ -496,7 +497,7 @@ The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, ser
 | FR-4 Vulnerable and constant-time examples | Implementation selector, and the face-off mode that runs both on the same input |
 | FR-5 Charts | Timing distributions, raw histogram with data table, confidence-interval plot, prefix-sweep chart |
 | FR-6 Mitigation recommendations | "What to do about it" panel lists the engine's reasons for the decision |
-| Dashboard: status, severity and confidence, evidence, recommended action, history, filters | Overview, Result and History screens |
+| Dashboard: status, severity and confidence, evidence, recommended action, history, filters | Home, Result and History screens |
 | High-impact actions need confirmation | Rule change, deactivation and password reset all use a confirmation dialog |
 | Exportable, sanitized result | "Export report" (JSON with integrity digest) and "Print / save as PDF" |
 | Unauthorized user gets a generic denial | Routes are guarded in the UI, and the server returns the same 404 or `ACCESS_DENIED` either way |
@@ -537,7 +538,7 @@ The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, ser
 ## 📘 3.6 User guide (operator and viewer)
 
 1. **Sign in** with the account an administrator created. Sessions expire after a set time (30 minutes by default), and you are then asked to sign in again.
-2. **Start from an example** on the Overview, or open **New measurement**.
+2. **Start from an example** on the Home, or open **New measurement**.
 3. Choose a **mode**. Single run tests one input. Prefix sweep tests 1, 4 and 32 correct bytes. Face-off runs the vulnerable and the constant-time comparison on the same input.
 4. Set **samples per group** (30 to 5000), **warm-up runs** (0 to 500) and an optional **seed**. Press **Run measurement**.
 5. Read the **Result**. Start with the verdict sentence, then the chart, then **Why this verdict** (three checks) and **What to do about it**.
@@ -572,7 +573,7 @@ Recovery: if the page shows "Cannot reach the SideWatch server", start the serve
 
 | Min | Step | What the audience sees |
 |---|---|---|
-| 0 to 2 | Sign in as operator, open Overview | Role-aware menu, examples |
+| 0 to 2 | Sign in as operator, open Home | Role-aware menu, examples |
 | 2 to 4 | "Show a leak": vulnerable, 4 bytes, 2000 samples | Leak verdict, mean difference, interval above zero, three checks met |
 | 4 to 5 | "Constant-time control" | No leak, caveat that this is not proof (T4) |
 | 5 to 7 | Prefix sweep, both implementations | Vulnerable line climbs with prefix length, constant-time stays flat (T3) |
@@ -587,7 +588,7 @@ Recovery: if the page shows "Cannot reach the SideWatch server", start the serve
 | File | Tests | Covers |
 |---|---|---|
 | `test_frontend.py` (Member C additions) | 3 | Assets served under the page CSP; no inline script, style or handlers in `index.html`; no raw HTML writes, `eval` or browser storage in any script |
-| `test_frontend_contract.py` | 12 | UI fixtures, prefix lengths, limits and rule bounds match the engine and backend; every API call targets a real router; CSRF and confirmation on state-changing calls; admin routes closed to other roles; no third-party hosts; every script parses; result screen shows severity, confidence, evidence, reasons, export and print; history offers all filters; print stylesheet hides navigation |
+| `test_frontend_contract.py` | 15 | UI fixtures, prefix lengths, limits and rule bounds match the engine and backend; every API call targets a real router; CSRF and confirmation on state-changing calls; admin routes closed to other roles; no third-party hosts; every script parses; result screen shows severity, confidence, evidence, reasons, export and print; history offers all filters; print stylesheet hides navigation; effects module is wired in and respects reduced motion; Home is named Home and tells the story; parallax and story styles exist with a print fallback |
 
 An earlier manual integration run used jsdom against the real backend (login failure and success, role menus, route guards, single run, sweep, face-off, history compare, run-again with the same seed, rule change with confirm and cancel, user creation, audit verification, stale CSRF recovery, expired session, empty states, sign-out). That script is not part of the repository, so those results are manual evidence only. Screenshots for the final report should be taken during rehearsal and linked from the report.
 
@@ -599,6 +600,7 @@ An earlier manual integration run used jsdom against the real backend (login fai
 - The timing curves are a normal approximation from each group's mean and standard deviation, because the engine returns only 20 histogram bins. The raw histogram is available beside them.
 - The interface only ever measures the built-in fixtures on the local machine. It cannot be pointed at another system, and the text on screen says so.
 - A "no leak" result is never presented as proof of safety.
+
 ---
 
 # 🧪 Part 4: Automation, Security Testing, Packaging and QA (Member D)

@@ -102,3 +102,27 @@ def test_history_offers_the_required_filters():
 def test_print_stylesheet_hides_chrome():
     css = (FRONT / "css/style.css").read_text(encoding="utf-8")
     assert "@media print" in css and ".top" in css.split("@media print")[1]
+
+
+def test_effects_module_is_wired_in_and_respects_reduced_motion():
+    fx = (FRONT / "js/fx.js").read_text(encoding="utf-8")
+    css = (FRONT / "css/style.css").read_text(encoding="utf-8")
+    assert "prefers-reduced-motion" in fx and "prefers-reduced-motion: reduce" in css
+    assert 'from "./fx.js"' in APP_JS and "initFx()" in APP_JS and "enhance(node)" in APP_JS
+    assert "@media print" in css and any(".reveal" in part for part in css.split("@media print")[1:])
+
+
+def test_home_is_named_home_and_tells_a_story():
+    home = (FRONT / "js/pages/home.js").read_text(encoding="utf-8")
+    assert 'label: "Home"' in APP_JS and "Overview" not in APP_JS and 'data-title": "Home"' in home
+    assert "CHAPTERS" in home and "storyScroll" in home and "pointerTilt" in home
+    assert "storyStrip(name)" in APP_JS and "nextBar(current)" in APP_JS
+
+
+def test_parallax_and_story_styles_exist_with_print_fallback():
+    css = (FRONT / "css/style.css").read_text(encoding="utf-8")
+    fx = (FRONT / "js/fx.js").read_text(encoding="utf-8")
+    assert "data-speed" in fx and "data-depth" in fx
+    for needle in (".story-stage", ".chapter-card", ".next-bar", ".story-strip", ".s-hero"):
+        assert needle in css, needle
+    assert ".story-stage" in css.split("@media print")[-1]

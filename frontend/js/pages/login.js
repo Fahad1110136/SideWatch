@@ -1,5 +1,5 @@
 import { h, field, alertBox, setFieldError } from "../ui.js";
-import { traceGlyph } from "../charts.js";
+import { traceGlyph, byteTower } from "../charts.js";
 
 export function loginPage({ onLogin, message }) {
   const user = h("input", { id: "u", autocomplete: "username", maxlength: 32, autofocus: true, spellcheck: "false" });
@@ -21,7 +21,7 @@ export function loginPage({ onLogin, message }) {
 
   return h("div", { class: "login" },
     h("section", { class: "login-intro" },
-      h("div", { class: "login-glyph" }, traceGlyph(0.2, "clean"), traceGlyph(1.8, "leak")),
+      h("div", { class: "login-tower" }, byteTower(8, { animate: true, size: "lg" })),
       h("h1", {}, "Can a stopwatch recover a secret?"),
       h("p", {}, "SideWatch measures how long a comparison takes when a guess is partly right, and tests whether that timing gives the secret away."),
       h("p", { class: "fine" }, "A local teaching lab. It measures simulated comparisons on this machine only; it is not a scanner for real systems.")),

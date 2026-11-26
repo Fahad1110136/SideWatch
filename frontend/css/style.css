@@ -221,3 +221,89 @@ dialog::backdrop { background: rgba(8,14,20,.6); }
   a { color: #000; text-decoration: none; }
   details:not([open]) > *:not(summary) { display: block; }
 }
+
+/* ======================================================================
+   Motion and depth layer. Everything below is disabled by the
+   prefers-reduced-motion rule at the end of this section.
+   ====================================================================== */
+
+/* ---- page entrance, scroll reveal, tilt */
+.page-in { animation: pageIn .5s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(10px); } }
+.reveal { opacity: 0; transform: translateY(26px) scale(.98); }
+.reveal.in { opacity: 1; transform: none; transition: opacity .6s ease, transform .7s cubic-bezier(.2,.8,.2,1); transition-delay: var(--d, 0ms); }
+.tilt { position: relative; transform-style: preserve-3d; will-change: transform; transition: transform .15s ease-out, border-color .2s, box-shadow .25s; }
+.tilt:hover { box-shadow: 0 14px 34px rgba(8,20,32,.18); }
+.tilt::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .2s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.16), transparent 60%); }
+.tilt:hover::after { opacity: 1; }
+
+/* ---- header, progress bar, back to top, buttons */
+.top { transition: box-shadow .25s, background .25s; }
+.top.scrolled { box-shadow: 0 8px 26px rgba(0,0,0,.3); }
+.scroll-progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 70; transform-origin: 0 50%; transform: scaleX(0);
+  background: linear-gradient(90deg, var(--trace), var(--accent)); }
+.to-top { position: fixed; left: 16px; bottom: 16px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  font-size: 1.2rem; cursor: pointer; z-index: 55; box-shadow: 0 6px 20px rgba(0,0,0,.2); animation: rise .2s ease-out; }
+.to-top:hover { border-color: var(--accent); color: var(--accent); }
+.btn { transition: transform .12s, box-shadow .2s, background .2s, border-color .2s; }
+.btn:not([disabled]):hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(8,20,32,.16); }
+.btn:not([disabled]):active { transform: none; box-shadow: none; }
+
+/* ---- skeleton loader */
+.skeleton { display: grid; gap: 14px; padding: 6px 0; }
+.sk { border-radius: 8px; background: linear-gradient(90deg, var(--soft) 25%, var(--line) 50%, var(--soft) 75%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+.sk-title { height: 34px; width: 38%; } .sk-row { height: 74px; } .sk-block { height: 220px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ---- 3D byte tower (one layer per byte of the guess) */
+.tower { --step: 22px; --w: 120px; perspective: 900px; width: 230px; height: 240px; display: grid; place-items: center; flex: none; }
+.tower-in { position: relative; width: var(--w); height: var(--w); transform-style: preserve-3d; transform: translateY(54px) rotateX(62deg) rotateZ(25deg); animation: towerSpin 18s linear infinite; }
+@keyframes towerSpin { from { transform: translateY(54px) rotateX(62deg) rotateZ(0deg); } to { transform: translateY(54px) rotateX(62deg) rotateZ(360deg); } }
+.slab { position: absolute; inset: 0; border-radius: 14px; border: 2px solid var(--ctrl); background: rgba(141,155,170,.14); transform: translateZ(calc(var(--i) * var(--step))); }
+.slab.on { border-color: var(--clean); background: rgba(23,121,90,.28); box-shadow: 0 0 22px rgba(23,121,90,.45); }
+.tower.tone-leak .slab.on { border-color: var(--leak); background: rgba(180,35,60,.26); box-shadow: 0 0 22px rgba(180,35,60,.45); }
+.tower.tone-unsure .slab.on { border-color: var(--unsure); background: rgba(143,91,0,.26); box-shadow: 0 0 22px rgba(143,91,0,.4); }
+.tower-sm { --step: 15px; --w: 84px; width: 170px; height: 170px; } .tower-sm .tower-in { transform: translateY(34px) rotateX(62deg) rotateZ(25deg); }
+@keyframes towerSpinSm { from { transform: translateY(34px) rotateX(62deg) rotateZ(0deg); } to { transform: translateY(34px) rotateX(62deg) rotateZ(360deg); } }
+.tower-sm .tower-in { animation-name: towerSpinSm; }
+.tower-lg { --step: 26px; --w: 150px; width: 300px; height: 300px; } .tower-lg .tower-in { transform: translateY(70px) rotateX(62deg) rotateZ(25deg); }
+@keyframes towerSpinLg { from { transform: translateY(70px) rotateX(62deg) rotateZ(0deg); } to { transform: translateY(70px) rotateX(62deg) rotateZ(360deg); } }
+.tower-lg .tower-in { animation-name: towerSpinLg; }
+.tower.scan .slab { animation: slabScan 3.6s ease-in-out infinite; animation-delay: calc(var(--i) * .22s); }
+@keyframes slabScan {
+  0%, 55%, 100% { border-color: #7f90a1; background: rgba(127,144,161,.12); box-shadow: none; }
+  15%, 35% { border-color: var(--trace); background: rgba(127,224,205,.3); box-shadow: 0 0 26px rgba(127,224,205,.6); }
+}
+.login-tower { display: flex; justify-content: center; margin-bottom: 8px; }
+.login-intro { position: relative; overflow: hidden; }
+.login-intro::before { content: ""; position: absolute; inset: -30%; pointer-events: none; animation: drift 18s ease-in-out infinite alternate;
+  background: radial-gradient(40% 40% at 25% 30%, rgba(127,224,205,.22), transparent 70%), radial-gradient(35% 35% at 80% 70%, rgba(149,160,255,.24), transparent 70%); }
+.login-intro > * { position: relative; }
+@keyframes drift { from { transform: translate3d(-4%, -3%, 0) rotate(0deg); } to { transform: translate3d(5%, 4%, 0) rotate(8deg); } }
+.login-card { animation: pageIn .7s .1s cubic-bezier(.2,.8,.2,1) both; }
+
+/* ---- overview hero, gauge, 3D verdict */
+.hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; overflow: hidden; margin-bottom: 16px; padding: 12px 12px 12px 28px;
+  border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(135deg, var(--panel) 35%, var(--accent-bg)); }
+.hero h2 { font: 650 clamp(1.4rem, 3vw, 2rem)/1.15 var(--serif); margin-bottom: 8px; }
+.hero p { max-width: 54ch; color: var(--muted); }
+@media (max-width: 680px) { .hero { grid-template-columns: 1fr; padding: 20px; } .hero .tower { display: none; } }
+.gauge-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; } .gauge-row p { max-width: 46ch; margin: 0; }
+.gauge { width: 230px; height: auto; flex: none; }
+.gauge-track { fill: none; stroke: var(--soft); stroke-width: 14; stroke-linecap: round; }
+.gauge-val { fill: none; stroke: var(--accent); stroke-width: 14; stroke-linecap: round; transition: stroke-dasharray 1.1s cubic-bezier(.2,.8,.2,1); }
+.gauge-val.tone-leak { stroke: var(--leak); } .gauge-val.tone-clean { stroke: var(--clean); } .gauge-val.tone-unsure { stroke: var(--unsure); }
+.gauge-tick { stroke: var(--ink); stroke-width: 2.5; stroke-linecap: round; }
+.gauge-num { fill: var(--ink); font: 650 28px var(--sans); }
+.verdict { transform-origin: 50% 0; animation: verdictIn .8s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes verdictIn { from { opacity: 0; transform: perspective(900px) rotateX(-14deg) translateY(-12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.in { opacity: 1 !important; transform: none !important; }
+  .tower-in { animation: none !important; }
+}
+@media print {
+  .scroll-progress, .to-top, .hero .tower { display: none !important; }
+  .reveal, .reveal.in, .page-in, .verdict { opacity: 1 !important; transform: none !important; animation: none !important; }
+}

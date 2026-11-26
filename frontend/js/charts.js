@@ -162,3 +162,30 @@ function withLegend(svg, items) {
   return h("div", {}, svg, h("p", { class: "legend" },
     items.map(([cls, text]) => h("span", {}, h("i", { class: `swatch ${cls}` }), text))));
 }
+
+/** Half-circle gauge for the effect size (scale 0 to 2). The tick marks the rule's minimum effect size. */
+export function gauge(dz, tone, minEffect) {
+  const v = Math.min(Math.abs(dz ?? 0) / 2, 1) * 100;
+  const point = (frac, r) => { const a = Math.PI * (1 - Math.min(frac, 1)); return [100 + r * Math.cos(a), 100 - r * Math.sin(a)]; };
+  const [x1, y1] = point(minEffect / 2, 66), [x2, y2] = point(minEffect / 2, 94);
+  const arc = hs("path", { class: `gauge-val tone-${tone}`, d: "M 20 100 A 80 80 0 0 1 180 100", pathLength: 100 });
+  arc.style.strokeDasharray = "0.01 100";
+  requestAnimationFrame(() => requestAnimationFrame(() => { arc.style.strokeDasharray = `${Math.max(v, 0.01)} 100`; }));
+  return hs("svg", { class: "gauge", viewBox: "0 0 200 124", role: "img", "aria-label": `Effect size ${Math.abs(dz ?? 0).toFixed(2)} on a scale of 0 to 2; the rule minimum is ${minEffect}` },
+    hs("path", { class: "gauge-track", d: "M 20 100 A 80 80 0 0 1 180 100" }), arc,
+    hs("line", { class: "gauge-tick", x1, y1, x2, y2 }),
+    hs("text", { class: "gauge-num", x: 100, y: 92, "text-anchor": "middle" }, Math.abs(dz ?? 0).toFixed(2)),
+    hs("text", { class: "c-text", x: 100, y: 114, "text-anchor": "middle" }, "effect size (dz)"));
+}
+
+/** Rotating 3D stack of eight layers, one per byte of the guess. `lit` layers are the correct leading bytes. */
+export function byteTower(lit = 0, { animate = false, tone = "clean", size = "md" } = {}) {
+  const slabs = Array.from({ length: 8 }, (_, i) => {
+    const el = h("i", { class: `slab${i < lit ? " on" : ""}` });
+    el.style.setProperty("--i", String(i));
+    return el;
+  });
+  return h("div", { class: `tower tone-${tone} tower-${size}${animate ? " scan" : ""}`, role: "img",
+    "aria-label": animate ? "Animated stack of eight bytes, checked one at a time" : `Stack of eight bytes, ${lit} correct from the start` },
+    h("div", { class: "tower-in" }, slabs));
+}
