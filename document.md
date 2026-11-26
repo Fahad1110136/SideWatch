@@ -446,56 +446,159 @@ It prints a JSON report in which each case has its inputs, expected behavior, ac
 
 # 🖥️ Part 3: Frontend, Reporting and Integration (Member C)
 
-The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, served by the same FastAPI app. There is no build step, no npm and no CDN, so it runs offline and satisfies the page CSP (no inline script or style).
+## 🎯 3.1 Scope
 
-## 🧭 3.1 Screens
+Member C owns everything the user sees and the glue to the server:
+
+- The browser interface for validated input and explainable output (proposal layer 1)
+- Dashboard, charts, history with filters, run comparison and the admin screens
+- Reporting: the sanitized JSON export, plus a print-ready view of each result
+- Integration with Member A's API and Member B's engine output, without duplicating security logic
+
+The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, served by the same FastAPI app. There is no build step, no npm and no CDN, so it runs offline and satisfies the page CSP (no inline script or style). **The server remains the authority for every permission and every validation. The interface repeats limits only to give instant, friendly feedback.**
+
+| File | Purpose |
+|---|---|
+| `frontend/index.html` | Entry point: skip link, live region for notices, one module script |
+| `frontend/css/style.css` | Light and dark themes, responsive layout, focus styles, reduced motion, print stylesheet |
+| `frontend/js/app.js` | Shell, role-aware navigation, hash router with role guards, session resume |
+| `frontend/js/api.js` | The only file with URLs. CSRF handling, safe error mapping, report download |
+| `frontend/js/config.js` | Constants mirroring the server contract (fixtures, limits, rule bounds) |
+| `frontend/js/data.js` | Result batching and the three rule checks shown to the user |
+| `frontend/js/ui.js` | DOM helpers (text only), dialogs, toasts, form fields |
+| `frontend/js/charts.js` | Dependency-free SVG charts |
+| `frontend/js/pages/*.js` | One module per screen: login, home, run, result, history, admin |
+| `backend/tests/test_frontend.py`, `test_frontend_contract.py` | Automated checks of the interface (section 3.9) |
+
+## 🧭 3.2 Screens
 
 | Screen | Roles | What it does |
 |---|---|---|
 | Sign in | all | Login with safe errors, rate-limit and lockout messages, and resumed sessions after a reload |
 | Overview | all | Counts of recent leaks, clean runs and failures, one-click examples (leak, control, too few samples, noisy), latest results |
 | New measurement | admin, operator | Single run, **prefix sweep** (1, 4 and 32 correct bytes, one or both implementations) and **face-off** (vulnerable vs constant-time) |
-| Result | all | Verdict sentence, severity, timing curves, confidence interval, the three rule checks, recommendations, reproduction settings, report export |
-| History | all (role-scoped by the server) | Filters, search, paging, and pick two runs to compare |
-| Compare | all | Side-by-side evidence, and a check that a repeated run used the same schedule hash (T6) |
-| Prefix sweep | all | Mean difference against correct prefix length, with confidence intervals (T3, T4) |
+| Result | all | Verdict sentence, severity, confidence level, timing curves, confidence interval, the three rule checks, recommendations, reproduction settings, export and print |
+| History | all (role-scoped by the server) | Filters for implementation and status (server side) and for decision, severity and label (on the loaded page), paging, pick two runs to compare |
+| Compare | all | Side-by-side evidence, and a check that a repeated run used the same schedule hash |
+| Prefix sweep | all | Mean difference against correct prefix length, with confidence intervals |
 | Rules | admin edits, operator reads | The three thresholds with bounds, version, and a confirmation dialog on change |
 | Users | admin | Create accounts, activate or deactivate, reset passwords (confirmed) |
 | Audit log | admin | Filter by action and outcome, expand details, verify the hash chain |
 | Account | all | Change own password |
 
-## 🔌 3.2 How it talks to the backend
+### Proposal requirements covered
+
+| Proposal item | Where it is met |
+|---|---|
+| FR-1 Test harness | New measurement form: client-side checks, then the server validates again; errors are shown with a reference id |
+| FR-2 Repeated measurements | Sample size, warm-up and seed controls; "Run again" reuses the exact settings |
+| FR-3 Statistical comparison | Result screen: p-value, effect size, confidence interval, three pass/fail rule checks; Compare screen for two runs |
+| FR-4 Vulnerable and constant-time examples | Implementation selector, and the face-off mode that runs both on the same input |
+| FR-5 Charts | Timing distributions, raw histogram with data table, confidence-interval plot, prefix-sweep chart |
+| FR-6 Mitigation recommendations | "What to do about it" panel lists the engine's reasons for the decision |
+| Dashboard: status, severity and confidence, evidence, recommended action, history, filters | Overview, Result and History screens |
+| High-impact actions need confirmation | Rule change, deactivation and password reset all use a confirmation dialog |
+| Exportable, sanitized result | "Export report" (JSON with integrity digest) and "Print / save as PDF" |
+| Unauthorized user gets a generic denial | Routes are guarded in the UI, and the server returns the same 404 or `ACCESS_DENIED` either way |
+
+## 🔌 3.3 How it talks to the backend
 
 - `frontend/js/api.js` is the only file with URLs. It uses same-origin `fetch`, so there is no CORS.
 - The CSRF token is held in memory only. On load the page calls `GET /api/auth/me` and then `GET /api/auth/csrf`. If a request fails with `CSRF_FAILED` (for example after another tab rotated the token) it refreshes the token and retries once.
 - Any `AUTH_REQUIRED` or `AUTH_SESSION_EXPIRED` response returns the user to the sign-in screen with a message.
 - Errors show the backend's safe message plus its `request_id` reference. Raw response bodies are never displayed.
 - Rule changes and password resets send `confirm: true` only after an on-screen confirmation.
+- Results never change once stored, so the interface caches them for the session and clears the cache on sign-out.
 
-## 🛡️ 3.3 Security controls in the interface
+## 🛡️ 3.4 Security controls in the interface
 
 | Threat | Control | Evidence |
 |---|---|---|
-| Script injection through server text (labels, audit details, reasons) | Every dynamic value is inserted with `createTextNode`; the code never uses `innerHTML` or similar | `test_interface_code_never_writes_raw_html`; manual check with an injected `<img onerror>` |
-| Inline script or third-party code | Strict page CSP, no inline script or style, no external hosts | `test_index_has_no_inline_script_style_or_handlers`, `test_frontend_served_with_page_csp` |
-| CSRF | Token in memory, sent as `X-CSRF-Token` on every state-changing call, one safe retry | Integration run "stale CSRF token auto-recovers" |
-| Token theft from storage | Nothing is stored in `localStorage` or `sessionStorage`; the session cookie is HttpOnly | Same code scan test |
-| Showing actions a role cannot use | Menu, routes and buttons follow the role, but the server remains the authority | Integration runs: viewer `POST /api/submissions` returns `ACCESS_DENIED` |
-| Accidental high-impact changes | Confirmation dialogs for rule changes, deactivation and password resets | Integration run: cancelling a rule change sends nothing |
-| Misleading results | A permanent caveat that a clean result is not proof of constant-time; the CI level is never called a probability | Result screen text |
+| Script injection through server text (labels, audit details, reasons) | Every dynamic value is inserted with `createTextNode`; the code never uses `innerHTML` or similar | `test_interface_code_never_writes_raw_html` |
+| Inline script or third-party code | Strict page CSP, no inline script or style, no external hosts | `test_index_has_no_inline_script_style_or_handlers`, `test_frontend_served_with_page_csp`, `test_no_third_party_hosts_or_inline_handlers_in_scripts` |
+| CSRF | Token in memory, sent as `X-CSRF-Token` on every state-changing call, one safe retry | `test_state_changing_requests_send_csrf_and_rule_changes_confirm` |
+| Token theft from storage | Nothing is stored in `localStorage` or `sessionStorage`; the session cookie is HttpOnly | `test_interface_code_never_writes_raw_html` (also scans for storage APIs) |
+| Showing actions a role cannot use | Menu, routes and buttons follow the role, but the server remains the authority | `test_admin_screens_are_not_routable_by_other_roles`; server side in `test_api.py` |
+| UI and server drifting apart | Fixture names, prefix lengths, limits and rule bounds are checked against the engine and backend | `test_ui_fixtures_match_engine_whitelist`, `test_ui_prefix_lengths_match_engine`, `test_ui_limits_match_backend_schema`, `test_ui_rule_bounds_match_rule_repo`, `test_every_api_call_targets_a_real_backend_route` |
+| Accidental high-impact changes | Confirmation dialogs for rule changes, deactivation and password resets | Manual check: cancelling a rule change sends nothing |
+| Misleading results | A permanent caveat that a clean result is not proof of constant-time; the confidence level is never called a probability | Result screen text |
+| Sensitive data in printed or exported output | The export is the server's sanitized report; the print view shows only what is already on screen and hides navigation and the user name | `test_print_stylesheet_hides_chrome` |
 
-## 🧪 3.4 Interface tests
+## ♿ 3.5 Accessibility and responsiveness
 
-The interface was exercised against the real running backend (jsdom, real HTTP, real cookies and CSRF) rather than a mock. Checks covered: login failure and success, role menus, route guards, a single run, sweep (6 server runs), face-off, history with comparison, run-again with the same seed (identical schedule hash), rule change with confirm and cancel, user creation, audit verification, stale CSRF recovery, expired session, empty states, and sign-out. Three static checks were added to `backend/tests/test_frontend.py`.
+- Skip link, one `h1` per screen, landmarks (`header`, `nav`, `main`) and focus moved to the main area after each navigation.
+- Every field has a visible label, a hint and an error message in a live region. Errors are text, not only colour.
+- Verdicts use text and an icon as well as colour (✓ and ✗ marks with screen-reader text "Met" and "Not met").
+- Charts have a text label, and the raw histogram has a full data table beside it.
+- Dialogs use the native `<dialog>` element (focus trap, Escape to cancel).
+- Visible focus ring, respects `prefers-reduced-motion`, and light and dark themes follow the system setting.
+- Layouts reflow down to phone width (cards stack, tables scroll inside their own container, no sideways page scroll).
 
-## ⚠️ 3.5 Known limits
+## 📘 3.6 User guide (operator and viewer)
 
-- The history table needs a result for every row, so it fetches results in small batches. Adding `decision` and `severity` to the submission list response would remove those extra calls.
+1. **Sign in** with the account an administrator created. Sessions expire after a set time (30 minutes by default), and you are then asked to sign in again.
+2. **Start from an example** on the Overview, or open **New measurement**.
+3. Choose a **mode**. Single run tests one input. Prefix sweep tests 1, 4 and 32 correct bytes. Face-off runs the vulnerable and the constant-time comparison on the same input.
+4. Set **samples per group** (30 to 5000), **warm-up runs** (0 to 500) and an optional **seed**. Press **Run measurement**.
+5. Read the **Result**. Start with the verdict sentence, then the chart, then **Why this verdict** (three checks) and **What to do about it**.
+6. Use **Run again** to repeat the same settings. With the same seed the schedule hash is identical.
+7. In **History**, filter, tick two runs and press **Compare selected**.
+8. **Export report** saves the sanitized JSON, and **Print / save as PDF** produces a one-page record of the open result.
+9. Viewers see completed results only and cannot start measurements.
+
+How to read a verdict:
+
+| Verdict | Meaning |
+|---|---|
+| Timing leak detected | The tested input was measurably slower or faster than the control, and all three checks passed |
+| No timing leak detected | None of the three checks showed a difference. This is not proof of constant-time behaviour |
+| Inconclusive | The checks disagree, usually too few samples or too much noise. Collect more samples |
+
+## 🧑‍💼 3.7 Administrator guide (interface)
+
+| Task | Where in the interface |
+|---|---|
+| Add a user | Users, "New account": username, temporary password (12 or more characters with letters and digits), role |
+| Deactivate or reactivate a user | Users, button on the row. Deactivating asks for confirmation and ends their sessions |
+| Reset a forgotten password | Users, "Reset password", confirm. Clears any lockout and signs the user out everywhere |
+| Change a threshold | Rules, edit the value, "Save change", then confirm. The change is versioned and audited |
+| Check that a change took effect | Run the same measurement again. The Result screen lists the thresholds and rule version it used |
+| Review activity | Audit log, filter by action and outcome, expand "view" for details |
+| Verify the log was not altered | Audit log, "Verify log integrity" |
+
+Recovery: if the page shows "Cannot reach the SideWatch server", start the server again (see Part 1, section 1.8). Interrupted runs are marked failed on restart and recorded in the audit log.
+
+## 🎬 3.8 Demonstration script (10 to 15 minutes)
+
+| Min | Step | What the audience sees |
+|---|---|---|
+| 0 to 2 | Sign in as operator, open Overview | Role-aware menu, examples |
+| 2 to 4 | "Show a leak": vulnerable, 4 bytes, 2000 samples | Leak verdict, mean difference, interval above zero, three checks met |
+| 4 to 5 | "Constant-time control" | No leak, caveat that this is not proof (T4) |
+| 5 to 7 | Prefix sweep, both implementations | Vulnerable line climbs with prefix length, constant-time stays flat (T3) |
+| 7 to 8 | "Too few samples", then "Noisy timing" | Wide interval, inconclusive result (T1, T2, T5) |
+| 8 to 9 | Run again with a seed, then Compare | Same schedule hash (T6) |
+| 9 to 10 | Export report, Print | Sanitized JSON with digest; print view |
+| 10 to 12 | Sign in as viewer, try the New measurement address | Redirected, and the server denies the API call; attempt in audit log |
+| 12 to 14 | Sign in as admin: change `alpha`, confirm, repeat the run | New result stores the new threshold; Audit log shows both events; verify chain |
+
+## 🧪 3.9 Interface tests
+
+| File | Tests | Covers |
+|---|---|---|
+| `test_frontend.py` (Member C additions) | 3 | Assets served under the page CSP; no inline script, style or handlers in `index.html`; no raw HTML writes, `eval` or browser storage in any script |
+| `test_frontend_contract.py` | 12 | UI fixtures, prefix lengths, limits and rule bounds match the engine and backend; every API call targets a real router; CSRF and confirmation on state-changing calls; admin routes closed to other roles; no third-party hosts; every script parses; result screen shows severity, confidence, evidence, reasons, export and print; history offers all filters; print stylesheet hides navigation |
+
+An earlier manual integration run used jsdom against the real backend (login failure and success, role menus, route guards, single run, sweep, face-off, history compare, run-again with the same seed, rule change with confirm and cancel, user creation, audit verification, stale CSRF recovery, expired session, empty states, sign-out). That script is not part of the repository, so those results are manual evidence only. Screenshots for the final report should be taken during rehearsal and linked from the report.
+
+## ⚠️ 3.10 Known limits and ethics
+
+- The History decision and severity filters apply to the 20 rows loaded on the current page. A server-side filter would need `decision` and `severity` on the submission list response.
+- The history table needs a result for every row, so it fetches results in small batches.
 - Mean timing differences are sensitive to rare large spikes. Wide intervals on short runs are expected; more samples narrow them.
 - The timing curves are a normal approximation from each group's mean and standard deviation, because the engine returns only 20 histogram bins. The raw histogram is available beside them.
-
-
-
+- The interface only ever measures the built-in fixtures on the local machine. It cannot be pointed at another system, and the text on screen says so.
+- A "no leak" result is never presented as proof of safety.
 ---
 
 # 🧪 Part 4: Automation, Security Testing, Packaging and QA (Member D)

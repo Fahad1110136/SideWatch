@@ -209,3 +209,15 @@ dialog::backdrop { background: rgba(8,14,20,.6); }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 .c-base, .c-fix { stroke-width: 0; } polygon.c-base { fill-opacity: .5; stroke: var(--ctrl-ink); stroke-width: 1.5; } polygon.c-fix { fill-opacity: .5; stroke: var(--accent); stroke-width: 1.5; }
+
+/* ---- print / save as PDF: a clean one-document report of the open result */
+@media print {
+  :root { --paper: #fff; --panel: #fff; --ink: #000; --muted: #333; --line: #999; --soft: #eee; }
+  body { background: #fff; background-image: none; font-size: 11pt; }
+  .top, .skip, .toasts, .head-actions, .pager, .btn, .data-details summary { display: none !important; }
+  main { max-width: none; padding: 0; }
+  .panel, .verdict, .callout { break-inside: avoid; border-color: #999; box-shadow: none; }
+  .verdict, .verdict.tone-leak, .verdict.tone-clean, .verdict.tone-unsure { background: #fff; }
+  a { color: #000; text-decoration: none; }
+  details:not([open]) > *:not(summary) { display: block; }
+}
