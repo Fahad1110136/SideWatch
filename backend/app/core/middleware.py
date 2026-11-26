@@ -3,7 +3,7 @@ import uuid
 from starlette.datastructures import MutableHeaders
 from starlette.responses import JSONResponse
 
-BODY_METHODS = {"POST", "PUT", "PATCH"}
+BODY_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 DOCS_PREFIXES = ("/api/docs", "/openapi.json")  # Swagger UI needs scripts, so no strict CSP there
 
 SECURITY_HEADERS = {
@@ -32,7 +32,7 @@ class BodySizeLimitMiddleware:
         length = headers.get(b"content-length")
         if length is not None:
             try:
-                too_big = int(length) > self.max_bytes
+                too_big = not 0 <= int(length) <= self.max_bytes
             except ValueError:
                 too_big = True
             if too_big:
@@ -43,7 +43,32 @@ class BodySizeLimitMiddleware:
             await self._reject(scope, receive, send, 411, "LENGTH_REQUIRED",
                                "Content-Length is required.")
             return
-        await self.app(scope, receive, send)
+        # Validate actual bytes before any route can perform side effects.
+        # Content-Length is only an early rejection hint, not the byte limit.
+        body = bytearray()
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                return
+            chunk = message.get("body", b"")
+            if len(body) + len(chunk) > self.max_bytes:
+                await self._reject(scope, receive, send, 413, "REQUEST_TOO_LARGE",
+                                   "Request body is too large.")
+                return
+            body.extend(chunk)
+            if not message.get("more_body", False):
+                break
+
+        delivered = False
+
+        async def replay():
+            nonlocal delivered
+            if not delivered:
+                delivered = True
+                return {"type": "http.request", "body": bytes(body), "more_body": False}
+            return await receive()
+
+        await self.app(scope, replay, send)
 
     @staticmethod
     async def _reject(scope, receive, send, status, code, message):

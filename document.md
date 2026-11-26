@@ -602,3 +602,117 @@ An earlier manual integration run used jsdom against the real backend (login fai
 ---
 
 # 🧪 Part 4: Automation, Security Testing, Packaging and QA (Member D)
+
+## 4.1 Scope and delivered work
+
+Member D owns repeatable verification, adversarial security checks, packaging
+verification, and the evidence used for final review. The application, engine and
+interface remain the work described in Parts 1-3. The current verification result
+is **172 passing tests, zero failures/errors/skips, and six passing evaluation
+cases**. Earlier counts in Parts 1-2 describe their historical contribution stages.
+See the [final QA report](docs/QA_REPORT.md), [JUnit evidence](docs/evidence/pytest.xml)
+and [run summary](docs/evidence/qa-summary.json).
+
+| Deliverable | Implementation or evidence |
+|---|---|
+| Single QA command with saved reports and nonzero failure status | [`scripts/qa.py`](scripts/qa.py), [usage](scripts/QA.md) |
+| Security tests over real localhost HTTP | [`test_security_live.py`](backend/tests/test_security_live.py) |
+| Actual server crash and two restarts, recovery exactly once | `test_live_crash_restart_recovers_once_and_preserves_state` in the same file |
+| Actual-byte size limit and session-bound CSRF regression tests | [`test_security_qa.py`](backend/tests/test_security_qa.py) |
+| Pinned dependencies and safe configuration initialization | [`requirements.lock`](requirements.lock), [`scripts/init_env.py`](scripts/init_env.py) |
+| Normal-entry-point packaging smoke command | [`scripts/smoke.py`](scripts/smoke.py), [saved result](docs/evidence/smoke-summary.json) |
+| Fresh-install instructions and Docker verification boundary | [packaging guide](PACKAGING.md) |
+| Measured effectiveness and engine latency | [40-run measurement record](docs/evidence/measurements.json) |
+| User/admin guide, demo script and delivery checklist | [user guide](docs/USER_GUIDE.md), [demo](docs/DEMO.md), [review checklist](docs/QA_REPORT.md#delivery-checklist) |
+
+## 4.2 Reproduce the checks
+
+Use the project root and the Python 3.12 environment installed from
+`requirements.lock`. The commands below do not require an existing administrator
+or running application, and do not replace the local `.env` or database.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe -m scripts.qa
+.\.venv\Scripts\python.exe -m scripts.smoke
+.\.venv\Scripts\python.exe -m docs.evidence.collect_measurements --output artifacts/qa/measurements.json
+```
+
+Run these sequentially to avoid disturbing timing measurements. The QA runner
+saves JSON, JUnit and logs in a new `artifacts/qa/` folder. The smoke command saves
+its summary, logs and sanitized report in a new `artifacts/packaging/` folder.
+Both fail with a nonzero exit status if their checks fail. The measurement
+collector records observations; alerts or misses are data, not a test-gate failure.
+The [evidence index](docs/evidence/README.md) explains the committed snapshots and
+their sanitization. Regenerated timing values are expected to differ.
+
+## 4.3 T-final security and recovery coverage
+
+| Requirement | Verified behavior | Evidence |
+|---|---|---|
+| Malformed/oversized input | Malformed JSON gives safe 422; oversized data gives 413; invalid submissions are not created | `test_live_invalid_unauthorized_repeated_and_safe_failures`, [`test_tfinal_backend.py`](backend/tests/test_tfinal_backend.py) |
+| Actual body-size enforcement | Missing or understated length cannot bypass the byte limit; oversized streams never reach the API; exact-limit bytes are preserved | [`test_security_qa.py`](backend/tests/test_security_qa.py) |
+| Unauthorized request | Anonymous receives 401; viewer submission receives 403 with an audited denial | Live HTTP security test and [`test_submissions_api.py`](backend/tests/test_submissions_api.py) |
+| Repeated submission | Each repeated request creates a separate completed record; configured rate limit is enforced | Live HTTP security test, [`test_tfinal_backend.py`](backend/tests/test_tfinal_backend.py) |
+| Safe failure | Engine exception and invalid output become `ENGINE_FAILED`, with no result/export or internal detail in the client response; later runs still work | Live HTTP security test |
+| Recovery after restart | A blocked engine call is terminated with the server; startup marks it failed once, without a fabricated result | Live crash/restart test |
+| Persistence and integrity | Completed results, rule value/version and active/revoked sessions persist; audit chain verifies across two restarts | Live crash/restart test, [normal smoke evidence](docs/evidence/smoke-summary.json) |
+
+The crash test uses a dedicated test entry point with deterministic fault hooks.
+The packaging smoke check uses the normal application and engine. Neither probes
+external targets. The crash test covers interruption during engine execution,
+not every possible point in a database transaction.
+
+## 4.4 Defects found and corrected
+
+| Finding | Correction | Regression evidence |
+|---|---|---|
+| Body limit trusted only declared Content-Length | Count actual received bytes before routing; include DELETE; reject negative declared lengths | Eight oversized-stream cases failed before the fix and pass afterward; exact-limit test passes |
+| Repeating setup could overwrite `.env` with a manual copy | Added exclusive-create configuration initialization with a generated secret | `test_env_setup_preserves_existing_config_and_secret`, `test_new_env_has_unique_strong_secrets` |
+| Smoke cleanup error could occur after a success flag was set | Set success only after cleanup; retry transient Windows handle failures; report cleanup failure as failure | `test_smoke_cleanup_failure_cannot_report_success` |
+| Docker's unprivileged user could not write default evidence directories | Give the application user ownership of `/app/artifacts` as well as `/app/data` | Dockerfile inspection only; Docker runtime unavailable |
+| Admin-seeding message claimed the default DB path even with a custom database | Removed the hard-coded path from the success message | Packaging smoke seeds and signs in against a temporary custom database |
+
+## 4.5 Measurement findings
+
+The [official T1-T6 record](docs/evidence/evaluation.json) contains inputs,
+expected/actual output, evidence and case status. Its checks establish fixture
+wiring and result structure; they do not require every deliberately vulnerable
+fixture to be detected under every noise condition.
+
+In that run, the sample-size comparison's interval width fell from **38.029 ns
+at 30 samples to 3.453 ns at 300 samples**. The four-byte comparison detected a
+gap of **92.938 ns** for the vulnerable implementation and **-0.281 ns** for
+`hmac.compare_digest`, which returned `no_leak_detected`. The one-byte vulnerable
+fixture was missed in the 60-sample prefix sweep. These are observed values,
+not fixed expected outputs. The CI level is 99%, not a probability that a leak exists.
+
+The additional [40-run study](docs/evidence/measurements.json) used 300 samples
+per group, 20 warm-ups, five seeds, both implementations and four non-jitter
+fixtures. Of 15 positive demonstrations, **13 detected a leak, one returned
+no leak, and one was inconclusive**. All 25 negative-control runs returned no
+leak. Engine-call latency was **6.816 ms median and 23.222 ms p95**. These small,
+one-host observations are not population error rates or API/UI latency claims.
+The [QA report](docs/QA_REPORT.md#measurement-analysis) gives the definitions and
+limitations, including jitter evidence from T2 and seeded reproducibility from T6.
+
+## 4.6 Packaging, limitations and ethics
+
+A new Python 3.12.10 environment on Windows 11 AMD64 installed the pinned
+dependencies without using the existing environment's site-packages. `pip check`
+reported no broken requirements. The [normal smoke record](docs/evidence/smoke-summary.json)
+verifies admin setup, frontend assets, login, measurement, sanitized export,
+digest verification, restart persistence, audit integrity and logout.
+
+Docker was not installed, so image build, Linux compatibility and Compose volume
+behavior remain unverified. Frontend asset/static checks passed, but Member D
+did not perform a new interactive-browser or accessibility rehearsal. Part 3's
+earlier interface-testing account remains its author's evidence. The
+[demo guide](docs/DEMO.md) includes the manual rehearsal steps.
+
+Only synthetic, fixed-width local fixtures are used. Do not submit real passwords,
+personal records or external systems as targets. Preserve private configuration,
+redact evidence before sharing, and use a vetted constant-time comparison even
+after a clean measurement. Timing noise, small samples and multiple comparisons
+can produce misses or alerts. No critical defect remained identified by the
+executed checks; passing tests are not a complete security certification.

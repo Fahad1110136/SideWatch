@@ -32,7 +32,7 @@ def main() -> None:
             sys.exit("That username already exists.")
         audit_repo.append_event(db, "admin.seed", AuditOutcome.SUCCESS, actor_id=user.id,
                                 actor_role="admin", resource_type="user", resource_id=user.id)
-    print(f"Admin '{data.username}' created. Database: data/sidewatch.db")
+    print(f"Admin '{data.username}' created.")
 
 
 if __name__ == "__main__":

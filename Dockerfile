@@ -5,13 +5,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.lock .
+RUN pip install --no-cache-dir -r requirements.lock
 
 COPY . .
 RUN useradd --system --create-home sidewatch \
-    && mkdir -p /app/data \
-    && chown sidewatch:sidewatch /app/data
+    && mkdir -p /app/data /app/artifacts \
+    && chown sidewatch:sidewatch /app/data /app/artifacts
 
 USER sidewatch
 

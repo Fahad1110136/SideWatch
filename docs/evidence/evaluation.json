@@ -1,0 +1,231 @@
+{
+  "cases": [
+    {
+      "actual": {
+        "ci_widths_ns": [
+          38.029434303578164,
+          3.453235596823582
+        ],
+        "sample_sizes_per_group": [
+          30,
+          300
+        ]
+      },
+      "evidence": {
+        "large_histogram_counts": [
+          300,
+          300
+        ],
+        "small_histogram_counts": [
+          30,
+          30
+        ]
+      },
+      "expected": "Both runs report their requested sample count and complete histograms.",
+      "id": "T1",
+      "inputs": {
+        "fixture_id": "prefix_1",
+        "sample_sizes_per_group": [
+          30,
+          300
+        ]
+      },
+      "passed": true,
+      "title": "Sample-size sensitivity"
+    },
+    {
+      "actual": {
+        "jitter_enabled": true,
+        "jitter_stddev_ns": 250.0,
+        "sequence_sha256": "709da87e567d65e460ad6db73a0ae67ba9346af1fdc5f8a97c64b6d762108469"
+      },
+      "evidence": {
+        "ci_ns": [
+          2.4107002168502163,
+          279.20621064906567
+        ],
+        "confidence": 0.99,
+        "decision": "leak_detected",
+        "effect_size": 0.3496171708917608,
+        "mean_difference_ns": 140.80845543295794,
+        "p_value": 0.008839745754700735,
+        "severity": "low"
+      },
+      "expected": "Fixture reports enabled 250 ns jitter and a digest for the simulated noise.",
+      "id": "T2",
+      "inputs": {
+        "fixture_id": "prefix_4_jitter",
+        "sample_size_per_group": 60
+      },
+      "passed": true,
+      "title": "Controlled jitter"
+    },
+    {
+      "actual": {
+        "full_match": 32,
+        "no_match": 0,
+        "prefix_1": 1,
+        "prefix_4": 4
+      },
+      "evidence": {
+        "full_match": {
+          "ci_ns": [
+            724.1613603884091,
+            744.3282229449242
+          ],
+          "confidence": 0.99,
+          "decision": "leak_detected",
+          "effect_size": 25.02220612368603,
+          "mean_difference_ns": 734.2447916666666,
+          "p_value": 1.8982797234617833e-84,
+          "severity": "high"
+        },
+        "no_match": {
+          "ci_ns": [
+            -9.17103527272128,
+            4.691868606054614
+          ],
+          "confidence": 0.99,
+          "decision": "no_leak_detected",
+          "effect_size": -0.11102890996562882,
+          "mean_difference_ns": -2.2395833333333335,
+          "p_value": 0.3932558265835331,
+          "severity": "info"
+        },
+        "prefix_1": {
+          "ci_ns": [
+            -139.3199099804482,
+            79.42407664711484
+          ],
+          "confidence": 0.99,
+          "decision": "no_leak_detected",
+          "effect_size": -0.0940921851103205,
+          "mean_difference_ns": -29.947916666666668,
+          "p_value": 0.46898592972169845,
+          "severity": "info"
+        },
+        "prefix_4": {
+          "ci_ns": [
+            79.78941379082322,
+            96.92933620917678
+          ],
+          "confidence": 0.99,
+          "decision": "leak_detected",
+          "effect_size": 3.5429648581419397,
+          "mean_difference_ns": 88.359375,
+          "p_value": 2.730646796145972e-35,
+          "severity": "high"
+        }
+      },
+      "expected": "Each selected fixture has the documented fixed-width prefix length.",
+      "id": "T3",
+      "inputs": {
+        "fixture_ids": [
+          "no_match",
+          "prefix_1",
+          "prefix_4",
+          "full_match"
+        ],
+        "sample_size_per_group": 60
+      },
+      "passed": true,
+      "title": "Prefix guesses"
+    },
+    {
+      "actual": {
+        "constant_time": "constant_time",
+        "vulnerable": "vulnerable"
+      },
+      "evidence": {
+        "constant_time": {
+          "ci_ns": [
+            -2.201110200658176,
+            1.6386102006581764
+          ],
+          "confidence": 0.99,
+          "decision": "no_leak_detected",
+          "effect_size": -0.03847553767753484,
+          "mean_difference_ns": -0.28125,
+          "p_value": 0.7012439681561973,
+          "severity": "info"
+        },
+        "vulnerable": {
+          "ci_ns": [
+            30.10327724090896,
+            155.77172275909103
+          ],
+          "confidence": 0.99,
+          "decision": "leak_detected",
+          "effect_size": 0.3884691279175901,
+          "mean_difference_ns": 92.9375,
+          "p_value": 0.00018518806244369486,
+          "severity": "low"
+        }
+      },
+      "expected": "Both implementations run the same fixture and report their identity.",
+      "id": "T4",
+      "inputs": {
+        "fixture_id": "prefix_4",
+        "implementations": [
+          "vulnerable",
+          "constant_time"
+        ],
+        "sample_size_per_group": 100
+      },
+      "passed": true,
+      "title": "Vulnerable and constant-time comparison"
+    },
+    {
+      "actual": {
+        "ci_level": 0.99,
+        "ci_ns": [
+          35.84884136871289,
+          117.5261586312871
+        ],
+        "confidence": 0.99
+      },
+      "evidence": {
+        "ci_ns": [
+          35.84884136871289,
+          117.5261586312871
+        ],
+        "confidence": 0.99,
+        "decision": "leak_detected",
+        "effect_size": 0.49319070521801694,
+        "mean_difference_ns": 76.6875,
+        "p_value": 3.2857227757685654e-06,
+        "severity": "low"
+      },
+      "expected": "Confidence equals the configured CI level and finite interval bounds are ordered.",
+      "id": "T5",
+      "inputs": {
+        "fixture_id": "prefix_4",
+        "sample_size_per_group": 100
+      },
+      "passed": true,
+      "title": "Confidence interval"
+    },
+    {
+      "actual": {
+        "jitter_sequence_sha256_matches": true,
+        "schedule_sha256_matches": true
+      },
+      "evidence": {
+        "jitter_sequence_sha256": "d9c02841e7c6ddbb1d0ab4b66aa4be708440aefe10dc58813a3d24c81756969e",
+        "schedule_sha256": "8b40b71c68305a0a2622f27e5bb94f9532607fa4580f179e1dc0fba040a0bc17"
+      },
+      "expected": "Repeated seeded runs produce identical schedule and simulated-jitter digests.",
+      "id": "T6",
+      "inputs": {
+        "fixture_id": "prefix_4_jitter",
+        "sample_size_per_group": 60,
+        "seed": 8675309
+      },
+      "passed": true,
+      "title": "Seed reproducibility"
+    }
+  ],
+  "engine_version": "1.0.0",
+  "passed": 6,
+  "total": 6
+}

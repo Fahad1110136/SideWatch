@@ -1,0 +1,51 @@
+{
+  "started_at_utc": "2026-11-24T20:53:51.771440+00:00",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows",
+    "platform_release": "11",
+    "machine": "AMD64",
+    "packages": {
+      "pytest": "9.2.0",
+      "fastapi": "0.115.14",
+      "httpx": "0.28.1",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1",
+      "sqlalchemy": "2.0.57",
+      "pydantic-settings": "2.16.2"
+    },
+    "git_revision": "d651d53509b0cc1b9e5067c7804caec6a2af8de1",
+    "working_tree_dirty": true
+  },
+  "checks": [
+    {
+      "name": "seed administrator",
+      "passed": true
+    },
+    {
+      "name": "startup and frontend assets",
+      "passed": true
+    },
+    {
+      "name": "login and measurement",
+      "passed": true,
+      "submission_id": "18fc97fa049a4d89a99feff5772c562f",
+      "decision": "leak_detected"
+    },
+    {
+      "name": "sanitized report and audit",
+      "passed": true,
+      "report_digest": "dc87626c83b697bb396d1ef61ec7a1f9732b424760178053d5ab337d1438bc42"
+    },
+    {
+      "name": "restart and persistence",
+      "passed": true
+    },
+    {
+      "name": "logout",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "finished_at_utc": "2026-11-24T20:53:58.731488+00:00"
+}

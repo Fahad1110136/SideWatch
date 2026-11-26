@@ -1,0 +1,15 @@
+{
+  "algorithm": "SHA-256",
+  "application_revision": "d651d53509b0cc1b9e5067c7804caec6a2af8de1",
+  "files": {
+    "collect_measurements.py": "26e9d5888b2c0b81921867d4a00acb781e291a65ffd5a0daeaae2e41f31e1420",
+    "dependency-check.json": "87060e7e7239b57db7278d72101e8e177743863e34c5fd4baf16d8d9781e75ce",
+    "evaluation.json": "5fc692e69d4adb07f7d3da7fb9f3ff362eb5f9dfd0d2fc4f186159e597b258f3",
+    "measurements.json": "468e4b9370ab81a832d9f26b16d2b9edaa5965e0ae0b3cdb9c2a93840cef94dc",
+    "pytest.xml": "66a7d3183fd3ba7e9efdf51a59a980c4f195caf5e9661c352e9b5699791e27e4",
+    "qa-summary.json": "b11d4557a47e6920fae2bebd45e833e6eb838888fd3bfa187857ae157fd99430",
+    "README.md": "05b1a17696d5bc2b8a0362d49c37e7f39e34e03efcbb4fd7942a674179b372b6",
+    "sample-report.json": "87282ccd09c746edb2b09941b1c671a0d7570c9f33a9e0f49738de780bb2e1c1",
+    "smoke-summary.json": "60b0921dad3f5d13ddff3206b0324a940d83f9269801e2087ab0f565472412fa"
+  }
+}

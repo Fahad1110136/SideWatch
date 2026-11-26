@@ -1,3 +1,5 @@
+# For the verified Python 3.12 dependency snapshot, install requirements.lock.
+# This file keeps the broader development dependency ranges.
 # --- Backend (Member A) ---
 fastapi==0.115.*
 uvicorn[standard]==0.32.*

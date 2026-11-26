@@ -1,0 +1,15 @@
+{
+  "recorded_at_utc": "2026-11-24T20:59:44.015577+00:00",
+  "command": [
+    "python",
+    "-m",
+    "pip",
+    "check"
+  ],
+  "exit_code": 0,
+  "stdout": "No broken requirements found.",
+  "stderr": "",
+  "isolated_virtual_environment": true,
+  "locked_packages_checked": 41,
+  "all_locked_versions_match": true
+}
