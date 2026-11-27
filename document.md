@@ -475,7 +475,7 @@ The interface is plain HTML, CSS and JavaScript (ES modules) in `frontend/`, ser
 
 | Screen | Roles | What it does |
 |---|---|---|
-| Sign in | all | Login with safe errors, rate-limit and lockout messages, and resumed sessions after a reload |
+| Sign in | all | Full-screen dark stage: 3D byte tower, parallax backdrop, glass sign-in card with show/hide password and Caps Lock warning, safe errors, rate-limit and lockout messages, and resumed sessions after a reload |
 | Home | all | Scroll-driven story with a pinned 3D scene, then counts of recent leaks, clean runs and failures, one-click examples (leak, control, too few samples, noisy), latest results and links to every other page |
 | New measurement | admin, operator | Single run, **prefix sweep** (1, 4 and 32 correct bytes, one or both implementations) and **face-off** (vulnerable vs constant-time) |
 | Result | all | Verdict sentence, severity, confidence level, timing curves, confidence interval, the three rule checks, recommendations, reproduction settings, export and print |
@@ -588,7 +588,7 @@ Recovery: if the page shows "Cannot reach the SideWatch server", start the serve
 | File | Tests | Covers |
 |---|---|---|
 | `test_frontend.py` (Member C additions) | 3 | Assets served under the page CSP; no inline script, style or handlers in `index.html`; no raw HTML writes, `eval` or browser storage in any script |
-| `test_frontend_contract.py` | 15 | UI fixtures, prefix lengths, limits and rule bounds match the engine and backend; every API call targets a real router; CSRF and confirmation on state-changing calls; admin routes closed to other roles; no third-party hosts; every script parses; result screen shows severity, confidence, evidence, reasons, export and print; history offers all filters; print stylesheet hides navigation; effects module is wired in and respects reduced motion; Home is named Home and tells the story; parallax and story styles exist with a print fallback |
+| `test_frontend_contract.py` | 16 | UI fixtures, prefix lengths, limits and rule bounds match the engine and backend; every API call targets a real router; CSRF and confirmation on state-changing calls; admin routes closed to other roles; no third-party hosts; every script parses; result screen shows severity, confidence, evidence, reasons, export and print; history offers all filters; print stylesheet hides navigation; effects module is wired in and respects reduced motion; Home is named Home and tells the story; parallax and story styles exist with a print fallback; the sign-in page is the redesigned dark stage |
 
 An earlier manual integration run used jsdom against the real backend (login failure and success, role menus, route guards, single run, sweep, face-off, history compare, run-again with the same seed, rule change with confirm and cancel, user creation, audit verification, stale CSRF recovery, expired session, empty states, sign-out). That script is not part of the repository, so those results are manual evidence only. Screenshots for the final report should be taken during rehearsal and linked from the report.
 

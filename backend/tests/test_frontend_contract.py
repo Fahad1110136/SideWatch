@@ -126,3 +126,12 @@ def test_parallax_and_story_styles_exist_with_print_fallback():
     for needle in (".story-stage", ".chapter-card", ".next-bar", ".story-strip", ".s-hero"):
         assert needle in css, needle
     assert ".story-stage" in css.split("@media print")[-1]
+
+
+def test_sign_in_page_is_the_redesigned_dark_stage():
+    login = (FRONT / "js/pages/login.js").read_text(encoding="utf-8")
+    css = (FRONT / "css/style.css").read_text(encoding="utf-8")
+    for needle in ("login-card", "pw-toggle", "pointerTilt", "byteTower", 'autocomplete: "current-password"', 'autocomplete: "username"'):
+        assert needle in login, needle
+    assert "color-scheme: dark" in css.split("Sign-in page")[1]
+    assert ".login-intro::before" not in css and ".login-glyph" not in css   # old sign-in rules were replaced, not stacked
