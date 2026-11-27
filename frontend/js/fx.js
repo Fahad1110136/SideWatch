@@ -1,10 +1,10 @@
 import { h } from "./ui.js";
 
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+export const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const finePointer = () => window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-const REVEAL = ".panel, .stat, .preset, .row-card, .callout, .hero, .note, .empty";
-const TILT = ".preset, .row-card, .stats > .stat";
+const REVEAL = ".panel, .stat, .preset, .row-card, .callout, .hero, .note, .empty, .next-bar, .path-card, .sect-head";
+const TILT = ".preset, .row-card, .stats > .stat, .path-card";
 
 let io = null;
 function observer() {
@@ -46,6 +46,45 @@ function tilt(el, max = 7) {
   el.addEventListener("pointerleave", () => { el.style.transform = ""; });
 }
 
+/** Tilts `el` in 3D towards the pointer anywhere on the page. Stops by itself once `el` leaves the page. */
+export function pointerTilt(el, max = 12) {
+  if (reduced() || !finePointer()) return;
+  const move = (e) => {
+    if (!el.isConnected) { window.removeEventListener("pointermove", move); return; }
+    const x = e.clientX / window.innerWidth - 0.5, y = e.clientY / window.innerHeight - 0.5;
+    el.style.transform = `perspective(1000px) rotateX(${(-y * max).toFixed(2)}deg) rotateY(${(x * max).toFixed(2)}deg)`;
+  };
+  window.addEventListener("pointermove", move, { passive: true });
+}
+
+/** Parallax: [data-speed] moves with scroll (fraction of scroll distance); [data-depth] follows the pointer (pixels). */
+function parallax(node) {
+  const slow = [...node.querySelectorAll("[data-speed]")], deep = [...node.querySelectorAll("[data-depth]")];
+  if (slow.length) {
+    let queued = false;
+    const onScroll = () => {
+      if (!node.isConnected) { window.removeEventListener("scroll", onScroll); return; }
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        const y = window.scrollY;
+        for (const el of slow) el.style.transform = `translate3d(0, ${(y * Number(el.dataset.speed)).toFixed(1)}px, 0)`;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+  if (deep.length && finePointer()) {
+    const onMove = (e) => {
+      if (!node.isConnected) { window.removeEventListener("pointermove", onMove); return; }
+      const x = e.clientX / window.innerWidth - 0.5, y = e.clientY / window.innerHeight - 0.5;
+      for (const el of deep) { const d = Number(el.dataset.depth); el.style.transform = `translate3d(${(x * d).toFixed(1)}px, ${(y * d).toFixed(1)}px, 0)`; }
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+  }
+}
+
 function countUp(el) {
   const target = Number(el.textContent.trim());
   const t0 = performance.now(), dur = 800;
@@ -63,6 +102,7 @@ export function enhance(node) {
   if (reduced()) return;
   node.classList.add("page-in");
   reveal(node);
+  parallax(node);
   for (const dd of node.querySelectorAll(".stat dd")) if (/^\d{1,6}$/.test(dd.textContent.trim()) && dd.textContent.trim() !== "0") countUp(dd);
   if (finePointer()) node.querySelectorAll(TILT).forEach((el) => tilt(el));
 }
