@@ -13,7 +13,7 @@ let user = null;      // {id, username, role} - a UI hint only. The SERVER enfor
 let main = null;
 
 const NAV = [
-  { path: "", label: "Overview", roles: ["admin", "operator", "viewer"] },
+  { path: "", label: "Home", roles: ["admin", "operator", "viewer"] },
   { path: "run", label: "New measurement", roles: ["admin", "operator"] },
   { path: "history", label: "History", roles: ["admin", "operator", "viewer"] },
   { path: "rules", label: "Rules", roles: ["admin", "operator"] },
@@ -32,6 +32,39 @@ const ROUTES = {
   audit: { roles: ["admin"], page: auditPage },
   account: { roles: ["admin", "operator", "viewer"], page: accountPage },
 };
+
+// Storytelling: where each page sits in the workflow, and one sentence of narrative for it.
+const FLOW = ["Learn", "Measure", "Decide", "Review", "Tune", "Govern"];
+const STORY = {
+  run: [2, "Choose what to test and how hard to look. Each run is a controlled experiment, so more samples give a tighter answer."],
+  results: [3, "Read the verdict from the top: what was found, how sure we are, and the evidence behind it."],
+  compare: [3, "Put two runs side by side to see whether a change, a seed or a fix altered the outcome."],
+  sweep: [3, "Watch the gap grow with every correct byte. That growth is the signature of an early-exit comparison."],
+  history: [4, "Every measurement is kept, so any verdict can be revisited, filtered and compared."],
+  rules: [5, "Thresholds decide what counts as a leak. Changes are versioned, confirmed and recorded."],
+  users: [6, "Access follows least privilege: operators measure, viewers read, administrators manage."],
+  audit: [6, "Security-relevant actions are chained in an append-only log that you can verify."],
+};
+
+function storyStrip(name) {
+  const s = STORY[name];
+  if (!s) return null;
+  return h("aside", { class: "story-strip", "aria-label": "Where you are in the workflow" },
+    h("ol", { class: "steps" }, FLOW.map((label, i) =>
+      h("li", { class: i + 1 < s[0] ? "done" : i + 1 === s[0] ? "cur" : "", "aria-current": i + 1 === s[0] ? "step" : false }, h("b", {}, String(i + 1)), h("span", {}, label)))),
+    h("p", { class: "strip-text" }, s[1]));
+}
+
+/** The footer of every page: the next page in the menu, so the story can be followed to the end. */
+function nextBar(current) {
+  const items = NAV.filter((n) => n.roles.includes(user.role));
+  const at = items.findIndex((n) => n.path === current);
+  if (at < 0) return null;
+  const next = items[at + 1];
+  return h("a", { class: "next-bar", href: "#/" + (next ? next.path : "") },
+    h("span", {}, h("span", { class: "next-kicker" }, next ? "Continue to" : "You have reached the end"), h("strong", {}, next ? next.label : "Back to Home")),
+    h("span", { class: "next-arrow", "aria-hidden": "true" }, next ? "→" : "↑"));
+}
 
 export const navigate = (path) => { location.hash = "#/" + path.replace(/^\//, ""); };
 
@@ -84,11 +117,16 @@ async function route() {
   const def = ROUTES[name];
   if (!def) { navigate(""); return; }
   if (!def.roles.includes(user.role)) { navigate(""); return; }
-  renderNav(["results", "compare", "sweep"].includes(name) ? "history" : name);
+  const current = ["results", "compare", "sweep"].includes(name) ? "history" : name;
+  renderNav(current);
   main.replaceChildren(skeleton());
   try {
     const node = await def.page({ user, args: parts.slice(1).map(decodeURIComponent), navigate });
     if (token !== routeToken || !main) return;  // user moved on (or signed out) while we were loading
+    const strip = storyStrip(name), head = node.querySelector(".page-head");
+    if (strip) { if (head) head.after(strip); else node.prepend(strip); }
+    const bar = nextBar(current);
+    if (bar) node.append(bar);
     main.replaceChildren(node);
     enhance(node);
     main.focus({ preventScroll: true });
